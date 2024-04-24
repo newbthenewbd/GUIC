@@ -1,0 +1,46 @@
+cmake_minimum_required(VERSION 3.13)
+
+project(OpenCorrGUI)
+
+include(FetchContent)
+
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release)
+endif()
+
+if(NOT DEFINED CMAKE_BUILD_WITH_INSTALL_RPATH)
+	set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
+endif()
+
+if(NOT DEFINED CMAKE_INSTALL_RPATH)
+	set(CMAKE_INSTALL_RPATH $ORIGIN)
+endif()
+
+if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
+if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(HAVE_STRING_H 1)
+set(BUILD_SHARED_LIBS OFF)
+set(BUILD_TESTS OFF)
+set(ENABLE_SSE ON)
+set(ENABLE_SSE2 ON)
+set(ENABLE_OPENMP ON)
+add_subdirectory(ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftw-3.3.10)
+set(ENABLE_FLOAT ON)
+add_subdirectory(ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftwf-3.3.10)
+
+option(NANOFLANN_BUILD_EXAMPLES "" OFF)
+option(NANOFLANN_BUILD_TESTS "" OFF)
+add_subdirectory(ext/nanoflann)
+
+add_subdirectory(src)
