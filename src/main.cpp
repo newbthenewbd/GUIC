@@ -9,10 +9,8 @@ int main(int argc, char** argv) {
 
 	MainWindow mainWindow;
 	
-	
-	
 	//mainWindow.setStatusBar(NULL);
-	mainWindow.show();
+	mainWindow.showMaximized();
 	
 	//mainWindow.stackedWidget;
 	

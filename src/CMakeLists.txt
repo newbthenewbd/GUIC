@@ -12,7 +12,9 @@ add_executable(${TARGET_NAME}
 	projecttab.h projecttab.cpp projecttab.ui
 	imagelistwidget.h
 	imagelistitem.h
-	turbo_colormap.h
+	tinycolormap.hpp
+	colormapwidget.h
+	colorpickerbutton.h
 )
 
 set_target_properties(${TARGET_NAME} PROPERTIES

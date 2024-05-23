@@ -22,7 +22,8 @@ class ProjectTab : public QWidget
     public slots:
     void addImages();
     void addImagesFromPaths(QStringList paths);
-    void imageListItemSelected(QListWidgetItem* imageListItem);
+    void imageListItemSelected(QListWidgetItem* imageListItem, QListWidgetItem* prevImageListItem);
+    void colormapSelected(int colormapId);
     
     private:
     Ui::ProjectTab *ui;

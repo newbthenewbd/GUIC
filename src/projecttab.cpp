@@ -13,7 +13,8 @@
 #include "opencorr.h"
 #include <opencv2/opencv.hpp>
 //#include <opencv2/world.hpp>
-#include "turbo_colormap.h"
+#define TINYCOLORMAP_WITH_QT5
+#include "tinycolormap.hpp"
 
 QGraphicsScene* scene;
 QPainter painter;
@@ -27,7 +28,17 @@ ui(new Ui::ProjectTab)
 	ui->setupUi(this);
 	
 	connect(ui->addImagesButton, &QToolButton::released, this, &ProjectTab::addImages);
-	connect(ui->listWidget, &QListWidget::itemClicked, this, &ProjectTab::imageListItemSelected);
+	connect(ui->listWidget, &QListWidget::currentItemChanged, this, &ProjectTab::imageListItemSelected);
+	connect(ui->chooseColormapBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ProjectTab::colormapSelected);
+	
+	ui->colormap->setColormap(tinycolormap::ColormapType::Heat);
+	ui->belowMinColorButton->setColor(ui->colormap->getColor(0.0));
+	ui->aboveMaxColorButton->setColor(ui->colormap->getColor(1.0));
+	
+	QPalette pal = ui->colormapFrame->palette();
+	pal.setColor(QPalette::Window, Qt::white);
+	ui->colormapFrame->setPalette(pal);
+	ui->colormapFrame->setAutoFillBackground(true);
 	
 	scene = new QGraphicsScene();
 	ui->graphicsView->setScene(scene);
@@ -35,7 +46,11 @@ ui(new Ui::ProjectTab)
 
 void ProjectTab::addImages()
 {
-	QStringList paths = QFileDialog::getOpenFileNames(this, QObject::tr("Add images"), /*QDir::currentPath()*/ "/Users/Czcibor/Desktop/Studia/Praca/muDIC/Examples/example_data", QObject::tr("Images (*.bmp *.jpg *.jpeg *.png *.pbm *.pgm *.ppm *.tif *.tiff *.xbm *.xpm);;BMP (*.bmp);;JPEG (*.jpg *.jpeg);;PNG (*.png);;PBM (*.pbm);;PGM (*.pgm);;PPM (*.ppm);;TIFF (*.tif *.tiff);;XBM (*.xbm);;XPM (*.xpm);;All files (*.*)"));
+	QStringList paths = QFileDialog::getOpenFileNames(this, QObject::tr("Add images"), "" /*TODO remember last directory*/, QObject::tr("Images (*.bmp *.jpg *.jpeg *.png *.pbm *.pgm *.ppm *.tif *.tiff *.xbm *.xpm);;BMP (*.bmp);;JPEG (*.jpg *.jpeg);;PNG (*.png);;PBM (*.pbm);;PGM (*.pgm);;PPM (*.ppm);;TIFF (*.tif *.tiff);;XBM (*.xbm);;XPM (*.xpm);;All files (*.*)")
+	#ifdef Q_OS_MAC
+	, nullptr, QFileDialog::DontUseNativeDialog //these file dialogs are the worst in the world!!!
+	#endif
+	);
 	addImagesFromPaths(paths);
 }
 
@@ -52,6 +67,143 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 	float maxDeformationNorm = 0.001f;
 	opencorr::NR2D1* nr = new opencorr::NR2D1(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
 	
+#define STRAIN
+#ifdef STRAIN
+	float strainRadius = 20.f;
+	int minNeighbors = 5;
+	opencorr::Strain* strain = new opencorr::Strain(strainRadius, minNeighbors, omp_get_num_procs());
+#endif
+	
+	float minDisplacement = FLT_MAX, maxDisplacement = FLT_MIN;
+	float minStrain = FLT_MAX, maxStrain = FLT_MIN;
+	for(QStringList::iterator i = paths.begin(); i != paths.end(); i++)
+	{
+		//Load image into Qt
+		QFileInfo fileInfo(*i);
+		ImageListItem* item = new ImageListItem();
+		item->pixmap = QPixmap(*i);
+		item->setText(fileInfo.fileName()); //TODO check if the name is unique
+		item->setIcon(item->pixmap);
+		ui->listWidget->addItem(item);
+		
+		//Load image into OpenCorr
+		item->image = new opencorr::Image2D(item->pixmap.width(), item->pixmap.height());
+		QImage inImage = item->pixmap.toImage().convertToFormat(QImage::Format_Grayscale8);
+		item->image->cv_mat = cv::Mat(inImage.height(), inImage.width(), CV_8UC1, inImage.bits(), (size_t) inImage.bytesPerLine()); //Taken from [1]; thanks!
+		cv::cv2eigen(item->image->cv_mat, item->image->eg_mat);
+		
+		if(ui->listWidget->count() <= 1) //0 should never happen; set reference image
+		{
+			printf("Setting reference image to %s...\n", qPrintable(fileInfo.fileName()));
+			
+			refImage = item->image;
+		}
+		else
+		{
+			printf("Processing %s...\n", qPrintable(fileInfo.fileName()));
+			
+			if(ui->listWidget->count() == 2) //No previous item to start from
+			{
+				//Set points of interest
+				for(int y = 800; y < 1600; y++)
+				{
+					for(int x = 325; x < 525; x++)
+					{
+						if(x % 8 == 0 && y % 8 == 0)
+						{
+							item->poi.push_back(opencorr::POI2D(x, y));
+						}
+					}
+				}
+				
+				fftcc->setImages(*refImage, *item->image);
+				fftcc->prepare();
+				fftcc->compute(item->poi);
+			}
+			else
+			{
+				item->poi = ((ImageListItem*) ui->listWidget->item(ui->listWidget->count()-2))->poi;
+			}
+			
+			nr->setImages(*refImage, *item->image);
+			nr->prepare();
+			nr->compute(item->poi);
+			
+#ifndef STRAIN
+			for(opencorr::POI2D& i : item->poi)
+			{
+				float displacement = sqrtf(powf(i.deformation.u, 2) + powf(i.deformation.v, 2));
+				
+				if(displacement < minDisplacement) minDisplacement = displacement;
+				if(displacement > maxDisplacement) maxDisplacement = displacement;
+			}
+			printf("min %f max %f\n", minDisplacement, maxDisplacement);
+			for(opencorr::POI2D& i : item->poi)
+			{
+				float displacement = sqrtf(powf(i.deformation.u, 2) + powf(i.deformation.v, 2));
+				
+				if(displacement != 0.0f)
+				{
+					//printf("Displacement at %f %f: %f\n", i.x, i.y, displacement);
+					
+					//unsigned char* color = turbo_srgb_bytes[(unsigned char) ((displacement - minDisplacement) * (255 / (maxDisplacement - minDisplacement)))];
+					QColor color = ui->colormap->getColor((displacement - minDisplacement) / (maxDisplacement - minDisplacement));
+					
+					painter.begin(&item->pixmap);
+					painter.setRenderHint(QPainter::Antialiasing, true);
+					painter.setPen(color); //outline
+					//painter.setBrush(color); //fill
+					
+					//draw arrow
+					painter.drawLine(i.x, i.y, i.x + i.deformation.u, i.y + i.deformation.v);
+					//int angle = atan2(i.x * i.deformation.v - i.y * i.deformation.u, i.x * i.deformation.u + i.y * i.deformation.v) * (180.0 / M_PI) * 16.0;
+					//painter.drawChord(i.x-1, i.y-1, 3, 3, angle-60, 2880+120);
+					painter.drawChord(QRectF(i.x + i.deformation.u - 1.5f, i.y + i.deformation.v - 1.5f, 3.0f, 3.0f), 0, 5760);
+					//painter.drawChord(QRectF(i.x - 1.5f, i.y - 1.5f, 3.0f, 3.0f), 0, 5760);
+					
+					painter.end();
+				}
+			}
+#else
+			//Calculate strains
+			strain->setApproximation(2); //Green strain
+			strain->prepare(item->poi);
+			strain->compute(item->poi);
+			
+			for(opencorr::POI2D& i : item->poi)
+			{
+				//float strain = cbrtf(powf(i.strain.exx, 3) + powf(i.strain.eyy, 3) + powf(i.strain.exy, 3));
+				float strain = i.strain.exx;
+				
+				if(strain < minStrain) minStrain = strain;
+				if(strain > maxStrain) maxStrain = strain;
+			}
+			printf("min %f max %f\n", minStrain, maxStrain);
+			for(opencorr::POI2D& i : item->poi)
+			{
+				//float strain = cbrtf(powf(i.strain.exx, 3) + powf(i.strain.eyy, 3) + powf(i.strain.exy, 3));
+				float strain = i.strain.exx;
+				
+				if(strain != 0.0f)
+				{
+					//printf("Strain at %f %f: %f\n", i.x, i.y, strain);
+					
+					//unsigned char* color = turbo_srgb_bytes[(unsigned char) ((strain - minStrain) * (255 / (maxStrain - minStrain)))];
+					QColor color = ui->colormap->getColor((strain - minStrain) / (maxStrain - minStrain));
+					
+					painter.begin(&item->pixmap);
+					painter.setRenderHint(QPainter::Antialiasing, true);
+					painter.setPen(color);
+					painter.setBrush(color); //fill
+					painter.drawChord(QRectF(i.x, i.y, 8.0, 8.0), 0, 5760);
+					painter.end();
+				}
+			}
+#endif
+		}
+	}
+	
+#if 0
 //#define STRAIN
 	
 #ifdef STRAIN
@@ -107,90 +259,49 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 			
 			//nr->prepare();
 			//nr->compute(item->poi);
-#ifndef STRAIN
-			
-			for(opencorr::POI2D& i : item->poi)
-			{
-				float displacement = sqrtf(powf(i.deformation.u, 2) + powf(i.deformation.v, 2));
-				
-				if(displacement < minDisplacement) minDisplacement = displacement;
-				if(displacement > maxDisplacement) maxDisplacement = displacement;
-			}
-			printf("min %f max %f\n", minDisplacement, maxDisplacement);
-			for(opencorr::POI2D& i : item->poi)
-			{
-				float displacement = sqrtf(powf(i.deformation.u, 2) + powf(i.deformation.v, 2));
-				
-				if(displacement != 0.0f)
-				{
-					//printf("Displacement at %f %f: %f\n", i.x, i.y, displacement);
-					
-					unsigned char* color = turbo_srgb_bytes[(unsigned char) ((displacement - minDisplacement) * (255 / (maxDisplacement - minDisplacement)))];
-					
-					painter.begin(&item->pixmap);
-					painter.setRenderHint(QPainter::Antialiasing, true);
-					painter.setPen(QColor(color[0], color[1], color[2])); //outline
-					//painter.setBrush(QColor(color[0], color[1], color[2])); //fill
-					
-					//draw arrow
-					painter.drawLine(i.x, i.y, i.x - i.deformation.u, i.y - i.deformation.v);
-					//int angle = atan2(i.x * i.deformation.v - i.y * i.deformation.u, i.x * i.deformation.u + i.y * i.deformation.v) * (180.0 / M_PI) * 16.0;
-					//painter.drawChord(i.x-1, i.y-1, 3, 3, angle-60, 2880+120);
-					painter.drawChord(QRectF(i.x-1.5, i.y-1.5, 3.0, 3.0), 0, 5760);
-					
-					painter.end();
-				}
-			}
-#else
-			//Calculate strains
-			strain->setApproximation(2); //Green strain
-			strain->prepare(item->poi);
-			strain->compute(item->poi);
-			
-			for(opencorr::POI2D& i : item->poi)
-			{
-				//float strain = cbrtf(powf(i.strain.exx, 3) + powf(i.strain.eyy, 3) + powf(i.strain.exy, 3));
-				float strain = i.strain.exx;
-				
-				if(strain < minStrain) minStrain = strain;
-				if(strain > maxStrain) maxStrain = strain;
-			}
-			printf("min %f max %f\n", minStrain, maxStrain);
-			for(opencorr::POI2D& i : item->poi)
-			{
-				//float strain = cbrtf(powf(i.strain.exx, 3) + powf(i.strain.eyy, 3) + powf(i.strain.exy, 3));
-				float strain = i.strain.exx;
-				
-				if(strain != 0.0f)
-				{
-					//printf("Strain at %f %f: %f\n", i.x, i.y, strain);
-					
-					unsigned char* color = turbo_srgb_bytes[(unsigned char) ((strain - minStrain) * (255 / (maxStrain - minStrain)))];
-					
-					painter.begin(&item->pixmap);
-					painter.setRenderHint(QPainter::Antialiasing, true);
-					painter.setPen(QColor(color[0], color[1], color[2]));
-					painter.setBrush(QColor(color[0], color[1], color[2])); //fill
-					painter.drawChord(QRectF(i.x, i.y, 3.0, 3.0), 0, 5760);
-					painter.end();
-				}
-			}
-#endif
+
 		}
 	}
 #ifdef STRAIN
 	delete strain;
 #endif
+#endif
 	//delete nr;
 	delete fftcc;
 }
 
-void ProjectTab::imageListItemSelected(QListWidgetItem* imageListItem) {
+void ProjectTab::imageListItemSelected(QListWidgetItem* imageListItem, QListWidgetItem* prevImageListItem)
+{
 	ImageListItem* item = (ImageListItem*) imageListItem;
 	scene->clear();
 	QGraphicsPixmapItem* pi = new QGraphicsPixmapItem(item->pixmap);
 	//pi->setPos(10, 30);
 	scene->addItem(pi);
+}
+
+void ProjectTab::colormapSelected(int colormapId)
+{
+	switch(colormapId) //reorder as in the UI
+	{
+		case 0:
+			ui->colormap->setColormap(tinycolormap::ColormapType::Heat);
+			break;
+		case 1:
+			ui->colormap->setColormap(tinycolormap::ColormapType::Turbo);
+			break;
+		case 2:
+			ui->colormap->setColormap(tinycolormap::ColormapType::Jet);
+			break;
+		case 3:
+			ui->colormap->setColormap(tinycolormap::ColormapType::Parula);
+			break;
+		default:
+			ui->colormap->setColormap((tinycolormap::ColormapType) colormapId);
+			break;
+	}
+	ui->belowMinColorButton->setColor(ui->colormap->getColor(0.0));
+	ui->aboveMaxColorButton->setColor(ui->colormap->getColor(1.0));
+	ui->colormap->repaint();
 }
 
 ProjectTab::~ProjectTab()
