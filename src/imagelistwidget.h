@@ -20,6 +20,11 @@ class ImageListWidget : public QListWidget
         option.displayAlignment = Qt::AlignHCenter | Qt::AlignBottom; //align text to bottom center
         return option;
     }
+    
+    /*QSize sizeHint() const override
+    {
+        return QListWidget::minimumSizeHint();
+    }*/
 };
 
 #endif // IMAGELISTWIDGET_H

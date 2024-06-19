@@ -2,6 +2,8 @@
 #include "ui_projecttab.h"
 #define W_NO_PROPERTY_MACRO
 #include <wobjectimpl.h>
+#include <QObject>
+#include <QEvent>
 #include <QFileDialog>
 #include <QDir>
 #include <QFileInfo>
@@ -9,39 +11,87 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QImage>
+#include <QStringList>
+#include <QListWidgetItem>
+#include <QStyleFactory>
+#include <QMenu>
+#include <QAction>
+#include <QComboBox>
+#include <QInputDialog>
 #include "imagelistitem.h"
 #include "opencorr.h"
 #include <opencv2/opencv.hpp>
 //#include <opencv2/world.hpp>
 #define TINYCOLORMAP_WITH_QT5
 #include "tinycolormap.hpp"
-
-QGraphicsScene* scene;
-QPainter painter;
+#include <vector>
 
 W_OBJECT_IMPL(ProjectTab)
 
-ProjectTab::ProjectTab(QWidget *parent) :
+ProjectTab::ProjectTab(QWidget* parent) :
 QWidget(parent),
 ui(new Ui::ProjectTab)
 {
 	ui->setupUi(this);
 	
-	connect(ui->addImagesButton, &QToolButton::released, this, &ProjectTab::addImages);
-	connect(ui->listWidget, &QListWidget::currentItemChanged, this, &ProjectTab::imageListItemSelected);
-	connect(ui->chooseColormapBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ProjectTab::colormapSelected);
+	//connect(ui->openImagesButton, &QToolButton::released, this, &ProjectTab::addImages);
+	//connect(ui->listWidget, &QListWidget::currentItemChanged, this, &ProjectTab::imageListItemSelected);
+	//connect(ui->chooseDisplayBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ProjectTab::displaySelected);
+	//connect(ui->chooseColormapBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ProjectTab::colormapSelected);
+	//connect(ui->resetScaleButton, &QToolButton::released, ui->sceneView, &SceneView::resetScale);
 	
-	ui->colormap->setColormap(tinycolormap::ColormapType::Heat);
-	ui->belowMinColorButton->setColor(ui->colormap->getColor(0.0));
-	ui->aboveMaxColorButton->setColor(ui->colormap->getColor(1.0));
+	//ui->colormap->setColormap(tinycolormap::ColormapType::Heat);
+	//ui->belowMinColorButton->setColor(ui->colormap->getColor(0.0));
+	//ui->aboveMaxColorButton->setColor(ui->colormap->getColor(1.0));
+	colormapSelected(0);
 	
-	QPalette pal = ui->colormapFrame->palette();
-	pal.setColor(QPalette::Window, Qt::white);
-	ui->colormapFrame->setPalette(pal);
-	ui->colormapFrame->setAutoFillBackground(true);
+	//QPalette pal = QApplication::palette();
+	//pal.setColor(QPalette::Window, Qt::lightGray);
+	//ui->colormap->setPalette(pal);
+	//ui->colormap->setAutoFillBackground(true);
+	
+	QStyle* fusion = QStyleFactory::create("Fusion"); //owned by Qt
+	
+	ui->displayConfigButton->setStyle(fusion);
+	ui->displayConfigButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogNewFolder));
+	
+	for(QObject* object : ui->toolBar->children())
+	{
+		if(object->isWidgetType()) ((QWidget*) object)->setStyle(fusion);
+	}
+	
+	ui->saveProjectButton->setIcon(style()->standardIcon(QStyle::SP_DriveFDIcon));
+	
+	ui->openImagesButton->setIcon(style()->standardIcon(QStyle::SP_DirOpenIcon));
+	
+	ui->solverButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
+	solverMenu = new QMenu();
+	solverActions[SOLVER_FFTCC_NR] = new QAction("FFTCC + NR");
+	for(int i = 0; i < SOLVER_MAX; i++)
+	{
+		solverMenu->addAction(solverActions[i]);
+	}
+	ui->solverButton->setMenu(solverMenu);
+	
+	ui->unitsButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogListView));
+	unitsMenu = new QMenu();
+	unitsActions[UNITS_PX_PERCENT] = new QAction("px, %");
+	unitsActions[UNITS_MM_PERCENT] = new QAction("mm, %");
+	unitsActions[UNITS_CALIBRATE] = new QAction("Calibrate...");
+	for(int i = 0; i < UNITS_MAX; i++)
+	{
+		if(i == UNITS_CALIBRATE)
+		{
+			unitsMenu->addSeparator();
+		}
+		unitsMenu->addAction(unitsActions[i]);
+	}
+	ui->unitsButton->setMenu(unitsMenu);
+	
+	ui->solveButton->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
 	
 	scene = new QGraphicsScene();
-	ui->graphicsView->setScene(scene);
+	ui->sceneView->setScene(scene);
 }
 
 void ProjectTab::addImages()
@@ -56,6 +106,21 @@ void ProjectTab::addImages()
 
 void ProjectTab::addImagesFromPaths(QStringList paths)
 {
+	for(QStringList::iterator i = paths.begin(); i != paths.end(); i++)
+	{
+		//Load image into Qt
+		QFileInfo fileInfo(*i);
+		ImageListItem* item = new ImageListItem();
+		item->pixmap = QPixmap(*i);
+		ui->statusLabel->setText("Loading " + fileInfo.fileName() + "...");
+		item->setText(fileInfo.fileName()); //TODO check if the name is unique
+		item->setIcon(item->pixmap);
+		ui->listWidget->addItem(item);
+		qApp->processEvents(); //maintain responsiveness
+	}
+	ui->statusLabel->setText("Ready");
+	
+#if 0
 	int subsetRadiusX = 16;
 	int subsetRadiusY = 16;
 	
@@ -268,6 +333,7 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 #endif
 	//delete nr;
 	delete fftcc;
+#endif
 }
 
 void ProjectTab::imageListItemSelected(QListWidgetItem* imageListItem, QListWidgetItem* prevImageListItem)
@@ -279,32 +345,144 @@ void ProjectTab::imageListItemSelected(QListWidgetItem* imageListItem, QListWidg
 	scene->addItem(pi);
 }
 
+void ProjectTab::displaySelected(int displayId)
+{
+	typedef struct {
+		UnitTypeID unit; 
+	} DisplayType;
+	
+	std::vector<DisplayType> displays = { //TODO make global, editable
+		(DisplayType) {UNIT_TYPE_MAX}, //null
+		(DisplayType) {UNIT_TYPE_DEFORMATION},
+		(DisplayType) {UNIT_TYPE_DEFORMATION},
+		(DisplayType) {UNIT_TYPE_DEFORMATION},
+		(DisplayType) {UNIT_TYPE_STRAIN},
+		(DisplayType) {UNIT_TYPE_STRAIN},
+		(DisplayType) {UNIT_TYPE_STRAIN}
+	};
+	
+	if(displays[displayId].unit == UNIT_TYPE_MAX)
+	{
+		ui->colormap->setUnit("");
+	}
+	else
+	{
+		ui->colormap->setUnit(unitsUnits[unitsAction][displays[displayId].unit]);
+	}
+}
+
 void ProjectTab::colormapSelected(int colormapId)
 {
-	switch(colormapId) //reorder as in the UI
-	{
-		case 0:
-			ui->colormap->setColormap(tinycolormap::ColormapType::Heat);
-			break;
-		case 1:
-			ui->colormap->setColormap(tinycolormap::ColormapType::Turbo);
-			break;
-		case 2:
-			ui->colormap->setColormap(tinycolormap::ColormapType::Jet);
-			break;
-		case 3:
-			ui->colormap->setColormap(tinycolormap::ColormapType::Parula);
-			break;
-		default:
-			ui->colormap->setColormap((tinycolormap::ColormapType) colormapId);
-			break;
-	}
+    tinycolormap::ColormapType colormapBoxTypes[] = { //TODO refactor out... along with the whole selector
+        tinycolormap::ColormapType::Heat,
+        tinycolormap::ColormapType::Turbo,
+        tinycolormap::ColormapType::Jet,
+        tinycolormap::ColormapType::Parula,
+        tinycolormap::ColormapType::Hot,
+        tinycolormap::ColormapType::Gray,
+        tinycolormap::ColormapType::Magma,
+        tinycolormap::ColormapType::Inferno,
+        tinycolormap::ColormapType::Plasma,
+        tinycolormap::ColormapType::Viridis,
+        tinycolormap::ColormapType::Cividis,
+        tinycolormap::ColormapType::Github,
+        tinycolormap::ColormapType::Cubehelix,
+        tinycolormap::ColormapType::HSV
+    };
+    ui->colormap->setColormap(colormapBoxTypes[colormapId]);
 	ui->belowMinColorButton->setColor(ui->colormap->getColor(0.0));
 	ui->aboveMaxColorButton->setColor(ui->colormap->getColor(1.0));
 	ui->colormap->repaint();
 }
 
+void ProjectTab::solverChanged(QAction* action)
+{
+	for(int i = 0; i < SOLVER_MAX; i++) //should always find one, if not found, do nothing at all
+	{
+		if(solverActions[i] == action)
+		{
+			ui->solverButton->setText("Solver: " + action->text() + " ");
+			solverAction = (SolverActionID) i;
+			//TODO recalculate
+			break;
+		}
+	}
+}
+
+void ProjectTab::unitsChanged(QAction* action)
+{
+	//QCoreApplication::postEvent(ui->unitsButton, new QHoverEvent(QEvent::HoverLeave, QPointF(), QPointF())); //no bueno, doesn't unhover the button still
+	
+	if(action == unitsActions[UNITS_CALIBRATE])
+	{
+		//TODO draw to calibrate
+		/*ui->statusLabel->setText("Click and drag to grab a dimension");
+		this->installEventFilter(this);*/
+		
+		bool got;
+		
+		double px = QInputDialog::getDouble(this, "Calibrate...", "Enter dimension in pixels:", pxCalibrated, 0.0, 2147483647.0, 1, &got);
+		if(!got) return;
+		
+		double mm = QInputDialog::getDouble(this, "Calibrate...", "Enter dimension in millimeters:", mmCalibrated, 0.0, 2147483647.0, 1, &got);
+		if(!got) return;
+		
+		pxCalibrated = px;
+		mmCalibrated = mm;
+		mmPerPxFactor = mm/px;
+	}
+	else
+	{
+		for(int i = 0; i < UNITS_CALIBRATE; i++) //should always find one, if not found, do nothing at all
+		{
+			if(unitsActions[i] == action)
+			{
+				ui->unitsButton->setText("Units: " + action->text() + " ");
+				unitsAction = (UnitsActionID) i;
+				displaySelected(ui->chooseDisplayBox->currentIndex());
+				break;
+			}
+		}
+	}
+	
+}
+
+void ProjectTab::solve()
+{
+	
+}
+
+bool ProjectTab::eventFilter(QObject* object, QEvent* event)
+{
+	//TODO type of filter discrimintor, when needed...
+	if(event->type() == QEvent::KeyPress || event->type() == QEvent::MouseButtonPress)
+	{
+		this->removeEventFilter(this);
+		object->removeEventFilter(this);
+		if(object != ui->sceneView)
+		{
+			ui->statusLabel->setText("Ready");
+			return true;
+		}
+	}
+	return false;
+}
+
 ProjectTab::~ProjectTab()
 {
 	delete ui;
+	
+	delete solverMenu;
+	for(int i = 0; i < SOLVER_MAX; i++)
+	{
+		delete solverActions[i];
+	}
+	
+	delete unitsMenu;
+	for(int i = 0; i < UNITS_MAX; i++)
+	{
+		delete unitsActions[i];
+	}
+	
+	delete scene;
 }

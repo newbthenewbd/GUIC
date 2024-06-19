@@ -15,6 +15,9 @@ add_executable(${TARGET_NAME}
 	tinycolormap.hpp
 	colormapwidget.h
 	colorpickerbutton.h
+	sceneview.h
+	sceneview.cpp
+	colormapwidget.cpp
 )
 
 set_target_properties(${TARGET_NAME} PROPERTIES

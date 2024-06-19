@@ -3,6 +3,7 @@
 
 #include <QToolButton>
 #include <QColorDialog>
+#include <QPainter>
 
 class ColorPickerButton : public QToolButton
 {
@@ -33,7 +34,7 @@ class ColorPickerButton : public QToolButton
         
         QPainter painter(this);
         
-        painter.fillRect(width()*0.25 + 0.5 - 1.0, height()*0.25 + 0.5 - 1.0, width()*0.5 + 0.5 + 2.0, height()*0.5 + 0.5 + 2.0, Qt::darkGray);
+        painter.fillRect(width()*0.25 + 0.5 - 1.0, height()*0.25 + 0.5 - 1.0, width()*0.5 + 0.5 + 2.0, height()*0.5 + 0.5 + 2.0, Qt::lightGray);
         painter.fillRect(width()*0.25 + 0.5, height()*0.25 + 0.5, width()*0.5 + 0.5, height()*0.5 + 0.5, color);
     }
     

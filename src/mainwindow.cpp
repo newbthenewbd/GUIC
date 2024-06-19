@@ -64,13 +64,13 @@ void MainWindow::closeTab(int index)
 
 void MainWindow::newProject()
 {
-	tabWidget->addTab(new ProjectTab(), "New Project");
+	tabWidget->addTab(new ProjectTab(), "New project");
 	tabWidget->setCurrentIndex(tabWidget->count()-1);
 }
 
 void MainWindow::openProject()
 {
-	QString filename = QFileDialog::getOpenFileName(nullptr, QObject::tr("Open Project"), QDir::currentPath(), QObject::tr("OpenCorrGUI files (*.ocg);;All files (*.*)"));
+	QString filename = QFileDialog::getOpenFileName(nullptr, QObject::tr("Open project"), QDir::currentPath(), QObject::tr("OpenCorrGUI files (*.ocg);;All files (*.*)"));
 }
 
 MainWindow::~MainWindow()
