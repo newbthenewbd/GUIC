@@ -25,6 +25,11 @@ typedef enum {
     SOLVER_FFTCC_NR, SOLVER_MAX
 } SolverActionID;
 
+typedef struct {
+	UnitTypeID unit;
+	int subUnit;
+} DisplayType;
+
 namespace Ui {
     class ProjectTab;
 }
@@ -44,7 +49,17 @@ class ProjectTab : public QWidget
     QMenu* solverMenu;
     SolverActionID solverAction = SOLVER_FFTCC_NR;
     QAction* solverActions[SOLVER_MAX];
-    double pxCalibrated = 0.0, mmCalibrated = 0.0, mmPerPxFactor = 1.0;
+    double pxCalibrated = 1.0, mmCalibrated = 1.0, mmPerPxFactor = 1.0;
+    std::vector<DisplayType> displayTypes = { //TODO make global, editable
+        (DisplayType) {UNIT_TYPE_MAX, 0}, //null
+        (DisplayType) {UNIT_TYPE_DEFORMATION, 0},
+        (DisplayType) {UNIT_TYPE_DEFORMATION, 1},
+        (DisplayType) {UNIT_TYPE_DEFORMATION, 2},
+        (DisplayType) {UNIT_TYPE_STRAIN, 0},
+        (DisplayType) {UNIT_TYPE_STRAIN, 1},
+        (DisplayType) {UNIT_TYPE_STRAIN, 2}
+    };
+    DisplayType displayType = (DisplayType) {UNIT_TYPE_MAX, 0};
     
     protected:
     bool eventFilter(QObject* object, QEvent* event);
@@ -58,8 +73,8 @@ class ProjectTab : public QWidget
     W_SLOT(addImages)
     void addImagesFromPaths(QStringList paths);
     W_SLOT(addImagesFromPaths)
-    void imageListItemSelected(QListWidgetItem* imageListItem, QListWidgetItem* prevImageListItem);
-    W_SLOT(imageListItemSelected, (QListWidgetItem*, QListWidgetItem*))
+    void displayImage();
+    W_SLOT(displayImage)
     void displaySelected(int displayId);
     W_SLOT(displaySelected)
     void colormapSelected(int colormapId);

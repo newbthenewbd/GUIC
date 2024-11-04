@@ -6,9 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>622</width>
+    <width>692</width>
     <height>400</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>.AppleSystemUIFont</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -879,7 +884,7 @@
    <sender>listWidget</sender>
    <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
    <receiver>ProjectTab</receiver>
-   <slot>imageListItemSelected(QListWidgetItem*,QListWidgetItem*)</slot>
+   <slot>displayImage()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>584</x>
@@ -974,7 +979,7 @@
  </connections>
  <slots>
   <slot>addImages()</slot>
-  <slot>imageListItemSelected(QListWidgetItem*,QListWidgetItem*)</slot>
+  <slot>displayImage()</slot>
   <slot>displaySelected(int)</slot>
   <slot>colormapSelected(int)</slot>
   <slot>unitsChanged(QAction*)</slot>
