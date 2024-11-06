@@ -25,6 +25,8 @@ void ColorMapWidget::setColormap(tinycolormap::ColormapType type)
     }
     
     gradient.setStops(stops);
+    
+    update();
 }
 
 double ColorMapWidget::getMinValue()
