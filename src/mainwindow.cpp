@@ -70,7 +70,7 @@ void MainWindow::newProject()
 
 void MainWindow::openProject()
 {
-	QString filename = QFileDialog::getOpenFileName(nullptr, QObject::tr("Open project"), QDir::currentPath(), QObject::tr("OpenCorrGUI files (*.ocg);;All files (*.*)"));
+	QString filename = QFileDialog::getOpenFileName(nullptr, QObject::tr("Open project"), QDir::currentPath(), QObject::tr("GUIC projects (*.guic);;All files (*.*)"));
 }
 
 MainWindow::~MainWindow()
