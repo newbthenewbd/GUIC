@@ -97,7 +97,6 @@ else()
 	set(BUILD_TESTS OFF)
 	set(BUILD_LIST core)
 	add_subdirectory(ext/opencv-4.10.0)
-	get_property(OpenCV_LIBS DIRECTORY ${CMAKE_BINARY_DIR}/ext/opencv-4.10.0 PROPERTY BUILDSYSTEM_TARGETS)
 endif()
 
 # 64-bit floating point version of FFTW
