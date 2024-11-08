@@ -39,7 +39,7 @@ else()
 				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
 				BUILD_COMMAND make
-				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/lib/libQt5Widgets.a
+				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND
 			)
 		else()
@@ -49,7 +49,7 @@ else()
 				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
 				BUILD_COMMAND make
-				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/lib/libQt5Widgets.a
+				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND
 			)
 		endif()
@@ -61,7 +61,7 @@ else()
 			SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 			CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform linux-g++-64
 			BUILD_COMMAND make
-			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/lib/libQt5Widgets.a
+			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 			INSTALL_COMMAND
 		)
 	else()
@@ -72,14 +72,14 @@ else()
 			SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 			CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -platform macx-clang
 			BUILD_COMMAND make
-			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/lib/libQt5Widgets.a
+			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 			INSTALL_COMMAND
 		)
 	endif()
 	add_library(Qt5::Widgets STATIC IMPORTED)
 	set_target_properties(Qt5::Widgets PROPERTIES
-		IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/lib/libQt5Widgets.a
-		INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/include/QtWidgets
+		IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
+		INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/include/QtWidgets
 	)
 	set(Qt5Core_VERSION_MAJOR 5)
 	set(Qt5Core_VERSION_MINOR 6)
