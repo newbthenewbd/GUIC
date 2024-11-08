@@ -31,6 +31,9 @@ target_link_libraries(${TARGET_NAME} PRIVATE Qt5::Widgets)
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/verdigris/src")
 
 target_link_libraries(${TARGET_NAME} PRIVATE opencv_core)
+if(NOT GUIC_USE_SYSTEM_OPENCV)
+	target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/core/include")
+endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/eigen" "${CMAKE_SOURCE_DIR}/ext/eigen/Eigen")
 
