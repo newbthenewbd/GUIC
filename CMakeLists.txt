@@ -95,7 +95,9 @@ else()
 	set(BUILD_EXAMPLES OFF)
 	set(BUILD_PERF_TESTS OFF)
 	set(BUILD_TESTS OFF)
+	set(BUILD_LIST core)
 	add_subdirectory(ext/opencv-4.10.0)
+	get_property(OpenCV_LIBS DIRECTORY ${CMAKE_BINARY_DIR}/ext/opencv-4.10.0 PROPERTY BUILDSYSTEM_TARGETS)
 endif()
 
 # 64-bit floating point version of FFTW
@@ -110,8 +112,8 @@ add_subdirectory(ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftw-3.3.10)
 
 # Explicitly disable the unity build optimization for FFTW, as it breaks
 # Also, if WIN32, use FFTW's builtin malloc
-get_property(SUBDIR_TARGETS DIRECTORY ${CMAKE_BINARY_DIR}/ext/fftw-3.3.10 PROPERTY BUILDSYSTEM_TARGETS)
-foreach(target ${SUBDIR_TARGETS})
+get_property(FFTW_TARGETS DIRECTORY ${CMAKE_BINARY_DIR}/ext/fftw-3.3.10 PROPERTY BUILDSYSTEM_TARGETS)
+foreach(target ${FFTW_TARGETS})
 	set_target_properties(${target} PROPERTIES UNITY_BUILD OFF)
 	if(WIN32)
 		target_compile_definitions(${target} PRIVATE WITH_OUR_MALLOC=1)
@@ -123,8 +125,8 @@ set(ENABLE_FLOAT ON)
 add_subdirectory(ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftwf-3.3.10)
 
 # Explicitly disable the unity build optimization for the other FFTW too...
-get_property(SUBDIR_TARGETS DIRECTORY ${CMAKE_BINARY_DIR}/ext/fftwf-3.3.10 PROPERTY BUILDSYSTEM_TARGETS)
-foreach(target ${SUBDIR_TARGETS})
+get_property(FFTWF_TARGETS DIRECTORY ${CMAKE_BINARY_DIR}/ext/fftwf-3.3.10 PROPERTY BUILDSYSTEM_TARGETS)
+foreach(target ${FFTWF_TARGETS})
 	set_target_properties(${target} PROPERTIES UNITY_BUILD OFF)
 	if(WIN32)
 		target_compile_definitions(${target} PRIVATE WITH_OUR_MALLOC=1)
