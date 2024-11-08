@@ -99,18 +99,23 @@ else()
 endif()
 
 # 64-bit floating point version of FFTW
-set(HAVE_STRING_H 1)
+#set(HAVE_STRING_H 1) # Why did I put this here again?
 set(BUILD_SHARED_LIBS OFF)
 set(BUILD_TESTS OFF)
 set(ENABLE_SSE ON)
 set(ENABLE_SSE2 ON)
-set(ENABLE_OPENMP OFF)
+set(ENABLE_THREADS ON)
+set(DISABLE_FORTRAN ON)
 add_subdirectory(ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftw-3.3.10)
 
 # Explicitly disable the unity build optimization for FFTW, as it breaks
+# Also, if WIN32, use FFTW's builtin malloc
 get_property(SUBDIR_TARGETS DIRECTORY ${CMAKE_BINARY_DIR}/ext/fftw-3.3.10 PROPERTY BUILDSYSTEM_TARGETS)
 foreach(target ${SUBDIR_TARGETS})
 	set_target_properties(${target} PROPERTIES UNITY_BUILD OFF)
+	if(WIN32)
+		target_compile_definitions(${target} PRIVATE WITH_OUR_MALLOC=1)
+	endif()
 endforeach()
 
 # 32-bit floating point version of FFTW - options as above plus this
@@ -121,6 +126,9 @@ add_subdirectory(ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftwf-3.3.10)
 get_property(SUBDIR_TARGETS DIRECTORY ${CMAKE_BINARY_DIR}/ext/fftwf-3.3.10 PROPERTY BUILDSYSTEM_TARGETS)
 foreach(target ${SUBDIR_TARGETS})
 	set_target_properties(${target} PROPERTIES UNITY_BUILD OFF)
+	if(WIN32)
+		target_compile_definitions(${target} PRIVATE WITH_OUR_MALLOC=1)
+	endif()
 endforeach()
 
 option(NANOFLANN_BUILD_EXAMPLES "" OFF)
