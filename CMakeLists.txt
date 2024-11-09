@@ -42,7 +42,7 @@ else()
 				CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
-				INSTALL_COMMAND
+				INSTALL_COMMAND ""
 			)
 		else()
 			ExternalProject_Add(
@@ -52,7 +52,7 @@ else()
 				CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
-				INSTALL_COMMAND
+				INSTALL_COMMAND ""
 			)
 		endif()
 	elseif(NOT APPLE)
@@ -64,7 +64,7 @@ else()
 			CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform linux-g++-64
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
 			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
-			INSTALL_COMMAND
+			INSTALL_COMMAND ""
 		)
 	else()
 		# Not crosscompiling, it's Mac itself!
@@ -75,16 +75,14 @@ else()
 			CONFIGURE_COMMAND ${QT_CONFIGURE} -platform macx-clang
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
 			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
-			INSTALL_COMMAND
+			INSTALL_COMMAND ""
 		)
 	endif()
-	add_library(Qt5::Widgets STATIC IMPORTED)
+	add_library(Qt5::Widgets INTERFACE IMPORTED)
 	add_dependencies(Qt5::Widgets Qt5)
 	set(QT_INCLUDE ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/include)
-	set_target_properties(Qt5::Widgets PROPERTIES
-		IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
-		INTERFACE_INCLUDE_DIRECTORIES ${QT_INCLUDE}/QtCore ${QT_INCLUDE}/QtWidgets ${QT_INCLUDE}
-	)
+	target_link_libraries(Qt5::Widgets INTERFACE ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a)
+	target_include_directories(Qt5::Widgets INTERFACE ${QT_INCLUDE} ${QT_INCLUDE}/QtCore ${QT_INCLUDE}/QtWidgets)
 	set(Qt5Core_VERSION_MAJOR 5)
 	set(Qt5Core_VERSION_MINOR 6)
 endif()
