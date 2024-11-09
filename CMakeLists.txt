@@ -79,6 +79,7 @@ else()
 		)
 	endif()
 	add_library(Qt5::Widgets STATIC IMPORTED)
+	add_dependencies(Qt5::Widgets Qt5)
 	set_target_properties(Qt5::Widgets PROPERTIES
 		IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 		INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/include/QtWidgets
