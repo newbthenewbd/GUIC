@@ -85,6 +85,7 @@ else()
 	target_compile_options(Qt5::Widgets INTERFACE -I${QT_INCLUDE} -I${QT_INCLUDE}/QtCore -I${QT_INCLUDE}/QtWidgets)
 	set(Qt5Core_VERSION_MAJOR 5)
 	set(Qt5Core_VERSION_MINOR 6)
+	set(AUTOUIC_EXECUTABLE ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/bin/uic)
 endif()
 
 option(GUIC_USE_SYSTEM_OPENCV "Use system-provided OpenCV" OFF)
