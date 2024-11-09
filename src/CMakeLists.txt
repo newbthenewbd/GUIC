@@ -32,7 +32,7 @@ target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/verdi
 
 target_link_libraries(${TARGET_NAME} PRIVATE opencv_core opencv_features2d opencv_flann opencv_imgcodecs)
 if(NOT GUIC_USE_SYSTEM_OPENCV)
-	target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/core/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/features2d/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/imgcodecs/include")
+	target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/core/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/features2d/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/flann/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/imgcodecs/include")
 endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/eigen" "${CMAKE_SOURCE_DIR}/ext/eigen/Eigen")
