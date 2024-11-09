@@ -27,7 +27,7 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 )
 
 if(WIN32)
-	target_link_libraries(${TARGET_NAME} -static gcc stdc++ winpthread -dynamic)
+	target_link_libraries(${TARGET_NAME} PRIVATE -static gcc stdc++ winpthread -dynamic)
 endif()
 
 if(NOT GUIC_USE_SYSTEM_QT)
