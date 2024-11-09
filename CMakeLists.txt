@@ -95,7 +95,7 @@ else()
 	set(BUILD_EXAMPLES OFF)
 	set(BUILD_PERF_TESTS OFF)
 	set(BUILD_TESTS OFF)
-	set(BUILD_LIST core features2d)
+	set(BUILD_LIST core features2d imgcodecs)
 	add_subdirectory(ext/opencv-4.10.0)
 endif()
 

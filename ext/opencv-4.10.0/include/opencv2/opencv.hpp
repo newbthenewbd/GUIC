@@ -67,9 +67,9 @@
 #ifdef HAVE_OPENCV_HIGHGUI
 #include "opencv2/highgui.hpp"
 #endif
-#ifdef HAVE_OPENCV_IMGCODECS
+//#ifdef HAVE_OPENCV_IMGCODECS
 #include "opencv2/imgcodecs.hpp"
-#endif
+//#endif
 #ifdef HAVE_OPENCV_IMGPROC
 #include "opencv2/imgproc.hpp"
 #endif
