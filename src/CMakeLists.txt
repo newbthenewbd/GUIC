@@ -54,29 +54,26 @@ if(NOT GUIC_USE_SYSTEM_QT)
 	set_target_properties(${TARGET_NAME} PROPERTIES
 		AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic
 	)
-	find_library(QT_CORE NAMES Qt5Core QtCore PATHS ${QT_BUILD_DIR}/bin ${QT_BUILD_DIR}/lib NO_DEFAULT_PATH)
-	find_library(QT_GUI NAMES Qt5Gui QtGui PATHS ${QT_BUILD_DIR}/bin ${QT_BUILD_DIR}/lib NO_DEFAULT_PATH)
-	find_library(QT_WIDGETS NAMES Qt5Widgets QtWidgets PATHS ${QT_BUILD_DIR}/bin ${QT_BUILD_DIR}/lib NO_DEFAULT_PATH)
-	target_link_libraries(${TARGET_NAME} PRIVATE ${QT_CORE} ${QT_GUI} ${QT_WIDGETS})
+	if(WIN32)
+		set(QT_LIBS ${QT_BUILD_DIR}/bin/Qt5Core.dll ${QT_BUILD_DIR}/bin/Qt5Gui.dll ${QT_BUILD_DIR}/bin/Qt5Widgets.dll)
+	else()
+		find_library(QT_CORE NAMES Qt5Core QtCore PATHS ${QT_BUILD_DIR}/bin ${QT_BUILD_DIR}/lib NO_DEFAULT_PATH)
+		find_library(QT_GUI NAMES Qt5Gui QtGui PATHS ${QT_BUILD_DIR}/bin ${QT_BUILD_DIR}/lib NO_DEFAULT_PATH)
+		find_library(QT_WIDGETS NAMES Qt5Widgets QtWidgets PATHS ${QT_BUILD_DIR}/bin ${QT_BUILD_DIR}/lib NO_DEFAULT_PATH)
+		set(QT_LIBS ${QT_CORE} ${QT_GUI} ${QT_WIDGETS})
+	endif()
+	target_link_libraries(${TARGET_NAME} INTERFACE ${QT_LIBS})
 	if(APPLE)
 		target_compile_options(${TARGET_NAME} PRIVATE -I${QT_BUILD_DIR}/lib/QtCore.framework/Headers -I${QT_BUILD_DIR}/lib/QtGui.framework/Headers -I${QT_BUILD_DIR}/lib/QtWidgets.framework/Headers)
 	else()
 		target_compile_options(${TARGET_NAME} PRIVATE -I${QT_BUILD_DIR}/include -I${QT_BUILD_DIR}/include/QtCore -I${QT_BUILD_DIR}/include/QtGui -I${QT_BUILD_DIR}/include/QtWidgets)
-		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_if_different
-			${QT_CORE}
-			${CMAKE_BINARY_DIR}/bin
-		)
-		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_if_different
-			${QT_GUI}
-			${CMAKE_BINARY_DIR}/bin
-		)
-		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_if_different
-			${QT_WIDGETS}
-			${CMAKE_BINARY_DIR}/bin
-		)
+		foreach(lib ${QT_LIBS})
+			add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy_if_different
+				${lib}
+				${CMAKE_BINARY_DIR}/bin
+			)
+		endforeach()
 	endif()
 else()
 	target_link_libraries(${TARGET_NAME} PRIVATE Qt5::Widgets)
