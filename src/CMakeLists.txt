@@ -23,10 +23,10 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 )
 
 if(MINGW)
-	find_library(WINPTHREAD_LIB libwinpthread-1.dll)
-	find_library(GCC_LIB libgcc_s_dw2-1.dll)
-	find_library(OPENMP_LIB libgomp-1.dll)
-	find_library(STDCPP_LIB libstdc++-6.dll)
+	find_file(WINPTHREAD_LIB libwinpthread-1.dll)
+	find_file(GCC_LIB libgcc_s_dw2-1.dll)
+	find_file(OPENMP_LIB libgomp-1.dll)
+	find_file(STDCPP_LIB libstdc++-6.dll)
 	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different
 		${WINPTHREAD_LIB}
