@@ -34,23 +34,12 @@ else()
 	include(ProcessorCount)
 	ProcessorCount(NUM_PROCESSORS)
 	if(WIN32)
-		if(CMAKE_HOST_WIN32)
-			# Not crosscompiling, it's Windows itself!
+		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			ExternalProject_Add(
 				Qt5
 				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -platform win32-g++
-				BUILD_COMMAND make -j${NUM_PROCESSORS}
-				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
-				INSTALL_COMMAND
-			)
-		elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-			ExternalProject_Add(
-				Qt5
-				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=/usr/bin/i686-w64-mingw32-
+				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND
@@ -60,7 +49,7 @@ else()
 				Qt5
 				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=/usr/bin/x86_64-w64-mingw32-
+				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND
