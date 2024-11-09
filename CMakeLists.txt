@@ -52,7 +52,7 @@ else()
 			Qt5
 			PREFIX ${QT_BUILD_DIR}
 			SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-			CONFIGURE_COMMAND ${QT_CONFIGURE} -qt-xcb -xplatform linux-g++-64
+			CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform linux-g++-64
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
 			INSTALL_COMMAND make install
 		)
