@@ -32,12 +32,22 @@ else()
 	# so it's a little bit harder
 	set(GUIC_QT_COMMON_CONFIGURE ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -no-openssl -no-harfbuzz -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified)
 	if(WIN32)
-		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+		if(CMAKE_HOST_WIN32)
 			ExternalProject_Add(
 				Qt5
 				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
+				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE}
+				BUILD_COMMAND make
+				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
+				INSTALL_COMMAND
+			)
+		elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+			ExternalProject_Add(
+				Qt5
+				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
+				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
+				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=/usr/bin/i686-w64-mingw32-
 				BUILD_COMMAND make
 				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND
@@ -47,7 +57,7 @@ else()
 				Qt5
 				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
+				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=/usr/bin/x86_64-w64-mingw32-
 				BUILD_COMMAND make
 				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND
