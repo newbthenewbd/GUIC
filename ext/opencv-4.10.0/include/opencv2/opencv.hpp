@@ -45,7 +45,7 @@
 
 // File that defines what modules where included during the build of OpenCV
 // These are purely the defines of the correct HAVE_OPENCV_modulename values
-//#include "opencv2/opencv_modules.hpp" // Fix packaged OpenCV without install 
+#include "opencv2/opencv_modules.hpp" 
 
 // Then the list of defines is checked to include the correct headers
 // Core library is always included --> without no OpenCV functionality available
@@ -55,9 +55,9 @@
 #ifdef HAVE_OPENCV_CALIB3D
 #include "opencv2/calib3d.hpp"
 #endif
-//#ifdef HAVE_OPENCV_FEATURES2D // Fix packaged OpenCV without install
+#ifdef HAVE_OPENCV_FEATURES2D
 #include "opencv2/features2d.hpp"
-//#endif
+#endif
 #ifdef HAVE_OPENCV_DNN
 #include "opencv2/dnn.hpp"
 #endif
@@ -67,9 +67,9 @@
 #ifdef HAVE_OPENCV_HIGHGUI
 #include "opencv2/highgui.hpp"
 #endif
-//#ifdef HAVE_OPENCV_IMGCODECS
+#ifdef HAVE_OPENCV_IMGCODECS
 #include "opencv2/imgcodecs.hpp"
-//#endif
+#endif
 #ifdef HAVE_OPENCV_IMGPROC
 #include "opencv2/imgproc.hpp"
 #endif
