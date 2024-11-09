@@ -16,14 +16,6 @@ if(NOT DEFINED CMAKE_INSTALL_RPATH)
 	set(CMAKE_INSTALL_RPATH $ORIGIN)
 endif()
 
-if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-endif()
-
-if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-endif()
-
 option(GUIC_USE_SYSTEM_QT "Use system-provided Qt5" OFF)
 if(GUIC_USE_SYSTEM_QT)
 	find_package(Qt5 REQUIRED COMPONENTS Widgets)
@@ -60,7 +52,7 @@ else()
 			Qt5
 			PREFIX ${QT_BUILD_DIR}
 			SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-			CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform linux-g++-64
+			CONFIGURE_COMMAND ${QT_CONFIGURE} -qt-xcb -xplatform linux-g++-64
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
 			INSTALL_COMMAND make install
 		)
@@ -77,10 +69,18 @@ else()
 	endif()
 	add_library(Qt5::Widgets INTERFACE IMPORTED)
 	add_dependencies(Qt5::Widgets Qt5)
-	target_link_libraries(Qt5::Widgets INTERFACE ${QT_BUILD_DIR}/bin/Qt5Core${CMAKE_SHARED_LIBRARY_SUFFIX} ${QT_BUILD_DIR}/bin/Qt5Gui${CMAKE_SHARED_LIBRARY_SUFFIX} ${QT_BUILD_DIR}/bin/Qt5Widgets${CMAKE_SHARED_LIBRARY_SUFFIX})
+	set(QT_LIBS ${QT_BUILD_DIR}/bin/Qt5Core${CMAKE_SHARED_LIBRARY_SUFFIX} ${QT_BUILD_DIR}/bin/Qt5Gui${CMAKE_SHARED_LIBRARY_SUFFIX} ${QT_BUILD_DIR}/bin/Qt5Widgets${CMAKE_SHARED_LIBRARY_SUFFIX})
+	target_link_libraries(Qt5::Widgets INTERFACE ${QT_LIBS})
 	target_compile_options(Qt5::Widgets INTERFACE -I${QT_BUILD_DIR}/include -I${QT_BUILD_DIR}/include/QtCore -I${QT_BUILD_DIR}/include/QtGui -I${QT_BUILD_DIR}/include/QtWidgets)
 	set(Qt5Core_VERSION_MAJOR 5)
 	set(Qt5Core_VERSION_MINOR 6)
+	foreach(lib ${QT_LIBS})
+		add_custom_command(TARGET Qt5 POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			${lib}
+			${CMAKE_BINARY_DIR}/bin
+		)
+	endforeach()
 endif()
 
 option(GUIC_USE_SYSTEM_OPENCV "Use system-provided OpenCV" OFF)
@@ -139,5 +139,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
+
+if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
+if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
 
 add_subdirectory(src)

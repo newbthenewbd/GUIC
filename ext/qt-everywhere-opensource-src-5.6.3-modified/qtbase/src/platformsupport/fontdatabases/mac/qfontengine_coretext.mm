@@ -29,6 +29,9 @@
 **
 ** $QT_END_LICENSE$
 **
+** Modified 2024/11/09 by Czcibor Bohusz-Dobosz in order to fix QFixed, ha ha
+** (https://bugreports.qt.io/browse/QTBUG-67545 accessed 2024/11/09; thanks!)
+**
 ****************************************************************************/
 
 #include "qfontengine_coretext_p.h"
@@ -764,7 +767,7 @@ void QCoreTextFontEngine::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, gl
 
 QFixed QCoreTextFontEngine::emSquareSize() const
 {
-    return QFixed::QFixed(int(CTFontGetUnitsPerEm(ctfont)));
+    return QFixed(int(CTFontGetUnitsPerEm(ctfont)));
 }
 
 QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const

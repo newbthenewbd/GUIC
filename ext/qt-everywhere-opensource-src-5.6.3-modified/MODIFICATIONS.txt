@@ -20,3 +20,10 @@ in accordance with https://codereview.qt-project.org/c/qt/qtbase/+/365167
 qtbase/src/corelib/tools/qsimd_p.h:
 Modified 2024/11/08 by Czcibor Bohusz-Dobosz: undef Mac _bit_scan_reverse
 See https://trac.macports.org/ticket/62051 (accessed 2024/11/08; thanks!)
+
+qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm:
+Modified 2024/11/09 by Czcibor Bohusz-Dobosz in order to fix QFixed, ha ha
+(https://bugreports.qt.io/browse/QTBUG-67545 accessed 2024/11/09; thanks!)
+
+qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm:
+Modified 2024/11/09 by Czcibor Bohusz-Dobosz, fixing a broken goto?

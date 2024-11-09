@@ -26,6 +26,10 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 	MACOSX_BUNDLE ON
 )
 
+if(WIN32)
+	target_link_libraries(${TARGET_NAME} -static gcc stdc++ winpthread -dynamic)
+endif()
+
 if(NOT GUIC_USE_SYSTEM_QT)
 	set_target_properties(${TARGET_NAME} PROPERTIES
 		AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic

@@ -29,6 +29,8 @@
 **
 ** $QT_END_LICENSE$
 **
+** Modified 2024/11/09 by Czcibor Bohusz-Dobosz, fixing a broken goto?
+**
 ****************************************************************************/
 
 #include "qcocoahelpers.h"
@@ -549,9 +551,18 @@ OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGIm
     // Verbatim copy if HIViewDrawCGImage (as shown on Carbon-Dev)
     OSStatus err = noErr;
 
-    require_action(inContext != NULL, InvalidContext, err = paramErr);
-    require_action(inBounds != NULL, InvalidBounds, err = paramErr);
-    require_action(inImage != NULL, InvalidImage, err = paramErr);
+    if(inContent == NULL) {
+        err = paramErr;
+        goto InvalidContext;
+    }
+    if(inBounds == NULL) {
+        err = paramErr;
+        goto InvalidBounds;
+    }
+    if(inImage == NULL) {
+        err = paramErr;
+        goto InvalidImage;
+    }
 
     CGContextSaveGState( inContext );
     CGContextTranslateCTM (inContext, 0, inBounds->origin.y + CGRectGetMaxY(*inBounds));
