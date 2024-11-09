@@ -22,6 +22,7 @@
 #include <QInputDialog>
 #include "imagelistitem.h"
 #include "opencorr.h"
+#include <omp.h>
 #include <opencv2/opencv.hpp>
 //#include <opencv2/world.hpp>
 #define TINYCOLORMAP_WITH_QT5

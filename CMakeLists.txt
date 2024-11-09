@@ -67,20 +67,8 @@ else()
 			INSTALL_COMMAND make install
 		)
 	endif()
-	add_library(Qt5::Widgets INTERFACE IMPORTED)
-	add_dependencies(Qt5::Widgets Qt5)
-	set(QT_LIBS ${QT_BUILD_DIR}/bin/Qt5Core${CMAKE_SHARED_LIBRARY_SUFFIX} ${QT_BUILD_DIR}/bin/Qt5Gui${CMAKE_SHARED_LIBRARY_SUFFIX} ${QT_BUILD_DIR}/bin/Qt5Widgets${CMAKE_SHARED_LIBRARY_SUFFIX})
-	target_link_libraries(Qt5::Widgets INTERFACE ${QT_LIBS})
-	target_compile_options(Qt5::Widgets INTERFACE -I${QT_BUILD_DIR}/include -I${QT_BUILD_DIR}/include/QtCore -I${QT_BUILD_DIR}/include/QtGui -I${QT_BUILD_DIR}/include/QtWidgets)
 	set(Qt5Core_VERSION_MAJOR 5)
 	set(Qt5Core_VERSION_MINOR 6)
-	foreach(lib ${QT_LIBS})
-		add_custom_command(TARGET Qt5 POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_if_different
-			${lib}
-			${CMAKE_BINARY_DIR}/bin
-		)
-	endforeach()
 endif()
 
 option(GUIC_USE_SYSTEM_OPENCV "Use system-provided OpenCV" OFF)

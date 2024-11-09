@@ -2,11 +2,7 @@ set(TARGET_NAME ${CMAKE_PROJECT_NAME})
 
 #file(GLOB_RECURSE src CONFIGURE_DEPENDS "*.c" "*.cpp" "*.ui")
 
-file(GLOB_RECURSE OPENCORR_SRC CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.c" "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.cpp")
-file(GLOB_RECURSE OPENCORR_H CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.h" "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.hpp")
-
 add_executable(${TARGET_NAME}
-	${OPENCORR_SRC}
 	main.cpp
 	mainwindow.h mainwindow.cpp mainwindow.ui
 	main.h
@@ -26,12 +22,65 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 	MACOSX_BUNDLE ON
 )
 
+if(MINGW)
+	find_library(WINPTHREAD_LIB libwinpthread-1.dll)
+	find_library(GCC_LIB libgcc_s_dw2-1.dll)
+	find_library(OPENMP_LIB libgomp-1.dll)
+	find_library(STDCPP_LIB libstdc++-6.dll)
+	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${WINPTHREAD_LIB}
+		${CMAKE_BINARY_DIR}/bin
+	)
+	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${GCC_LIB}
+		${CMAKE_BINARY_DIR}/bin
+	)
+	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${OPENMP_LIB}
+		${CMAKE_BINARY_DIR}/bin
+	)
+	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${STDCPP_LIB}
+		${CMAKE_BINARY_DIR}/bin
+	)
+endif()
+
 if(NOT GUIC_USE_SYSTEM_QT)
+	add_dependencies(${TARGET_NAME} Qt5)
 	set_target_properties(${TARGET_NAME} PROPERTIES
 		AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic
 	)
+	find_library(QT_CORE NAMES Qt5Core QtCore PATHS ${QT_BUILD_DIR}/bin ${QT_BUILD_DIR}/lib NO_DEFAULT_PATH)
+	find_library(QT_GUI NAMES Qt5Gui QtGui PATHS ${QT_BUILD_DIR}/bin ${QT_BUILD_DIR}/lib NO_DEFAULT_PATH)
+	find_library(QT_WIDGETS NAMES Qt5Widgets QtWidgets PATHS ${QT_BUILD_DIR}/bin ${QT_BUILD_DIR}/lib NO_DEFAULT_PATH)
+	target_link_libraries(${TARGET_NAME} PRIVATE ${QT_CORE} ${QT_GUI} ${QT_WIDGETS})
+	if(APPLE)
+		target_compile_options(${TARGET_NAME} PRIVATE -I${QT_BUILD_DIR}/lib/QtCore.framework/Headers -I${QT_BUILD_DIR}/lib/QtGui.framework/Headers -I${QT_BUILD_DIR}/lib/QtWidgets.framework/Headers)
+	else()
+		target_compile_options(${TARGET_NAME} PRIVATE -I${QT_BUILD_DIR}/include -I${QT_BUILD_DIR}/include/QtCore -I${QT_BUILD_DIR}/include/QtGui -I${QT_BUILD_DIR}/include/QtWidgets)
+		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			${QT_CORE}
+			${CMAKE_BINARY_DIR}/bin
+		)
+		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			${QT_GUI}
+			${CMAKE_BINARY_DIR}/bin
+		)
+		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			${QT_WIDGETS}
+			${CMAKE_BINARY_DIR}/bin
+		)
+	endif()
+else()
+	target_link_libraries(${TARGET_NAME} PRIVATE Qt5::Widgets)
 endif()
-target_link_libraries(${TARGET_NAME} PRIVATE Qt5::Widgets)
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/verdigris/src")
 
@@ -68,9 +117,14 @@ if(APPLE)
 	endif()
 endif()
 
-target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src")
-target_precompile_headers(${TARGET_NAME} PRIVATE ${OPENCORR_H})
-
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 
-install(FILES $<TARGET_RUNTIME_DLLS:${TARGET_NAME}> TYPE BIN)
+file(GLOB_RECURSE OPENCORR_SRC CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.c" "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.cpp")
+file(GLOB_RECURSE OPENCORR_H CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.h" "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.hpp")
+
+target_sources(${TARGET_NAME} PRIVATE ${OPENCORR_SRC})
+
+
+target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src")
+#target_precompile_headers(${TARGET_NAME} PRIVATE ${OPENCORR_H})
+
