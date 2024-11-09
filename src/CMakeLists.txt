@@ -26,10 +26,6 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 	MACOSX_BUNDLE ON
 )
 
-if(WIN32)
-	target_link_libraries(${TARGET_NAME} PRIVATE -static gcc stdc++ winpthread -dynamic)
-endif()
-
 if(NOT GUIC_USE_SYSTEM_QT)
 	set_target_properties(${TARGET_NAME} PROPERTIES
 		AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic
@@ -76,3 +72,5 @@ target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/OpenC
 target_precompile_headers(${TARGET_NAME} PRIVATE ${OPENCORR_H})
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
+
+install(FILES $<TARGET_RUNTIME_DLLS:${TARGET_NAME}> TYPE BIN)
