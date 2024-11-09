@@ -57,7 +57,7 @@ ui(new Ui::ProjectTab)
 	
 	ui->solverButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
 	solverMenu = new QMenu();
-	solverActions[SOLVER_FFTCC_NR] = new QAction("FFTCC + NR");
+	solverActions[SOLVER_FFTCC_NR] = new QAction("FFTCC + NR", nullptr);
 	for(int i = 0; i < SOLVER_MAX; i++)
 	{
 		solverMenu->addAction(solverActions[i]);
@@ -66,9 +66,9 @@ ui(new Ui::ProjectTab)
 	
 	ui->unitsButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogListView));
 	unitsMenu = new QMenu();
-	unitsActions[UNITS_PX_PERCENT] = new QAction("px, %");
-	unitsActions[UNITS_MM_PERCENT] = new QAction("mm, %");
-	unitsActions[UNITS_CALIBRATE] = new QAction("Calibrate...");
+	unitsActions[UNITS_PX_PERCENT] = new QAction("px, %", nullptr);
+	unitsActions[UNITS_MM_PERCENT] = new QAction("mm, %", nullptr);
+	unitsActions[UNITS_CALIBRATE] = new QAction("Calibrate...", nullptr);
 	for(int i = 0; i < UNITS_MAX; i++)
 	{
 		if(i == UNITS_CALIBRATE)

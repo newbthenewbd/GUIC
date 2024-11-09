@@ -264,14 +264,14 @@
               <property name="spacing">
                <number>0</number>
               </property>
-              <item alignment="Qt::AlignmentFlag::AlignLeft">
+              <item alignment="">
                <widget class="QLabel" name="label_2">
                 <property name="text">
                  <string>&gt;Max</string>
                 </property>
                </widget>
               </item>
-              <item alignment="Qt::AlignmentFlag::AlignLeft">
+              <item alignment="">
                <widget class="ColorPickerButton" name="aboveMaxColorButton"/>
               </item>
              </layout>
@@ -371,10 +371,10 @@
               <property name="spacing">
                <number>0</number>
               </property>
-              <item alignment="Qt::AlignmentFlag::AlignLeft">
+              <item alignment="">
                <widget class="ColorPickerButton" name="belowMinColorButton"/>
               </item>
-              <item alignment="Qt::AlignmentFlag::AlignLeft">
+              <item alignment="">
                <widget class="QLabel" name="label">
                 <property name="text">
                  <string>&lt;Min</string>
@@ -702,8 +702,8 @@
              <property name="maximum">
               <number>9999</number>
              </property>
-             <property name="stepType">
-              <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
+             <property name="singleStep">
+              <number>25</number>
              </property>
              <property name="value">
               <number>100</number>
