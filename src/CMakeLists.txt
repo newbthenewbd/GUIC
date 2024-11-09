@@ -26,6 +26,11 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 	MACOSX_BUNDLE ON
 )
 
+if(NOT GUIC_USE_SYSTEM_QT)
+	set_target_properties(${TARGET_NAME} PROPERTIES
+		AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic
+	)
+endif()
 target_link_libraries(${TARGET_NAME} PRIVATE Qt5::Widgets)
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/verdigris/src")

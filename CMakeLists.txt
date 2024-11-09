@@ -30,28 +30,27 @@ if(GUIC_USE_SYSTEM_QT)
 else()
 	# Version 5.6.3 unfortunately did not yet use CMake for building itself,
 	# so it's a little bit harder
-	set(QT_CONFIGURE ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -no-openssl -no-harfbuzz -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified)
+	set(QT_BUILD_DIR ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified)
+	set(QT_CONFIGURE ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -no-openssl -no-harfbuzz -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${QT_BUILD_DIR})
 	include(ProcessorCount)
 	ProcessorCount(NUM_PROCESSORS)
 	if(WIN32)
 		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			ExternalProject_Add(
 				Qt5
-				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
+				PREFIX ${QT_BUILD_DIR}
 				SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
-				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND make install
 			)
 		else()
 			ExternalProject_Add(
 				Qt5
-				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
+				PREFIX ${QT_BUILD_DIR}
 				SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
-				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND make install
 			)
 		endif()
@@ -59,33 +58,29 @@ else()
 		# It's totally x86_64 Linux!
 		ExternalProject_Add(
 			Qt5
-			PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
+			PREFIX ${QT_BUILD_DIR}
 			SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 			CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform linux-g++-64
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
-			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 			INSTALL_COMMAND make install
 		)
 	else()
 		# Not crosscompiling, it's Mac itself!
 		ExternalProject_Add(
 			Qt5
-			PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
+			PREFIX ${QT_BUILD_DIR}
 			SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 			CONFIGURE_COMMAND ${QT_CONFIGURE} -platform macx-clang
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
-			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 			INSTALL_COMMAND make install
 		)
 	endif()
 	add_library(Qt5::Widgets INTERFACE IMPORTED)
 	add_dependencies(Qt5::Widgets Qt5)
-	target_link_libraries(Qt5::Widgets INTERFACE ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a)
-	set(QT_INCLUDE ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/include)
-	target_compile_options(Qt5::Widgets INTERFACE -I${QT_INCLUDE} -I${QT_INCLUDE}/QtCore -I${QT_INCLUDE}/QtWidgets)
+	target_link_libraries(Qt5::Widgets INTERFACE ${QT_BUILD_DIR}/lib/libQt5Core.a ${QT_BUILD_DIR}/libQt5Gui.a ${QT_BUILD_DIR}/lib/libQt5Widgets.a)
+	target_compile_options(Qt5::Widgets INTERFACE -I${QT_INCLUDE} -I${QT_INCLUDE}/QtCore -I${QT_INCLUDE}/QtGui -I${QT_INCLUDE}/QtWidgets)
 	set(Qt5Core_VERSION_MAJOR 5)
 	set(Qt5Core_VERSION_MINOR 6)
-	set(AUTOUIC_EXECUTABLE ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/bin/uic)
 endif()
 
 option(GUIC_USE_SYSTEM_OPENCV "Use system-provided OpenCV" OFF)
