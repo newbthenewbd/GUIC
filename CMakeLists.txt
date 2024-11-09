@@ -30,7 +30,7 @@ if(GUIC_USE_SYSTEM_QT)
 else()
 	# Version 5.6.3 unfortunately did not yet use CMake for building itself,
 	# so it's a little bit harder
-	set(GUIC_QT_COMMON_CONFIGURE ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -no-openssl -no-harfbuzz -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified)
+	set(QT_CONFIGURE ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -no-openssl -no-harfbuzz -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified)
 	include(ProcessorCount)
 	ProcessorCount(NUM_PROCESSORS)
 	if(WIN32)
@@ -39,7 +39,7 @@ else()
 				Qt5
 				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
+				CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND
@@ -49,7 +49,7 @@ else()
 				Qt5
 				PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 				SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
+				CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 				INSTALL_COMMAND
@@ -61,7 +61,7 @@ else()
 			Qt5
 			PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 			SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-			CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -xplatform linux-g++-64
+			CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform linux-g++-64
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
 			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 			INSTALL_COMMAND
@@ -72,7 +72,7 @@ else()
 			Qt5
 			PREFIX ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
 			SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-			CONFIGURE_COMMAND ${GUIC_QT_COMMON_CONFIGURE} -platform macx-clang
+			CONFIGURE_COMMAND ${QT_CONFIGURE} -platform macx-clang
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
 			BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
 			INSTALL_COMMAND
@@ -80,9 +80,10 @@ else()
 	endif()
 	add_library(Qt5::Widgets STATIC IMPORTED)
 	add_dependencies(Qt5::Widgets Qt5)
+	set(QT_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/include)
 	set_target_properties(Qt5::Widgets PROPERTIES
 		IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/lib/libQt5Widgets.a
-		INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/include/QtWidgets
+		INTERFACE_INCLUDE_DIRECTORIES ${QT_INCLUDE} ${QT_INCLUDE}/QtCore ${QT_INCLUDE}/QtWidgets
 	)
 	set(Qt5Core_VERSION_MAJOR 5)
 	set(Qt5Core_VERSION_MINOR 6)
