@@ -107,11 +107,9 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 			
 			item->image = new opencorr::Image2D(path.toStdString());
 			QImage image = QImage(item->image->cv_mat.data, item->image->width, item->image->height, item->image->width, QImage::Format_Grayscale8);
-			
-			item->pixmap = QPixmap::fromImage(image);
 			item->setText(fileInfo.fileName()); //TODO check if the name is unique
 			
-			item->setIcon(item->pixmap);
+			item->setIcon(QPixmap::fromImage(image));
 			ui->listWidget->addItem(item);
 			qApp->processEvents(); //maintain responsiveness
 		} catch(...) {
