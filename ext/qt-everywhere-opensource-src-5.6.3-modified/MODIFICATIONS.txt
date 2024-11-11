@@ -33,3 +33,7 @@ Modified 2024/11/11 by Czcibor Bohusz-Dobosz to properly disable networks
 
 qtbase/src/network/socket/qlocalserver_win.cpp:
 Modified 2024/11/11 by Czcibor Bohusz-Dobosz to properly disable networks
+
+qtbase/src/plugins/platforms/cocoa/qnsview.mm:
+Modified 2024/11/11 by Czcibor Bohusz-Dobosz to fix accessibility warning
+https://bugreports.qt.io/browse/QTBUG-68830 (accessed 2024/11/11; thanks!)

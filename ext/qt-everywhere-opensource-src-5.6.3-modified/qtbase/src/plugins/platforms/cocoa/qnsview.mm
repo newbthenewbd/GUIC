@@ -29,6 +29,9 @@
 **
 ** $QT_END_LICENSE$
 **
+** Modified 2024/11/11 by Czcibor Bohusz-Dobosz to fix accessibility warning
+** https://bugreports.qt.io/browse/QTBUG-68830 (accessed 2024/11/11; thanks!)
+**
 ****************************************************************************/
 
 #include <QtCore/qglobal.h>
@@ -1968,19 +1971,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     // change the cursor
     [nativeCursor set];
 
-    // Make sure the cursor is updated correctly if the mouse does not move and window is under cursor
-    // by creating a fake move event
-    if (m_updatingDrag)
-        return;
-
-    const QPoint mousePos(QCursor::pos());
-    CGEventRef moveEvent(CGEventCreateMouseEvent(
-        NULL, kCGEventMouseMoved,
-        CGPointMake(mousePos.x(), mousePos.y()),
-        kCGMouseButtonLeft // ignored
-    ));
-    CGEventPost(kCGHIDEventTap, moveEvent);
-    CFRelease(moveEvent);
+    // The cursor might not be updated correctly if the mouse does not move and window is under cursor
+    // This could be patched by moving the cursor, but that requires accessibility rights on new macOS
 }
 
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender

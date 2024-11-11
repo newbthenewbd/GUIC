@@ -97,19 +97,18 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 {
 	for(QStringList::iterator i = paths.begin(); i != paths.end(); i++)
 	{
-		//Load image into Qt
+		QString path = *i;
 		QFileInfo fileInfo(*i);
-		ImageListItem* item = new ImageListItem();
-		item->pixmap = QPixmap(*i);
 		ui->statusLabel->setText("Loading " + fileInfo.fileName() + "...");
+		
+		ImageListItem* item = new ImageListItem();
+		
+		item->image = new opencorr::Image2D(path.toStdString());
+		QImage image = QImage(item->image->cv_mat.data, item->image->width, item->image->height, item->image->width, QImage::Format_Grayscale8);
+		
+		item->pixmap = QPixmap::fromImage(image);
 		item->setText(fileInfo.fileName()); //TODO check if the name is unique
 		
-		item->image = new opencorr::Image2D(item->pixmap.width(), item->pixmap.height());
-		QImage inImage = item->pixmap.toImage().convertToFormat(QImage::Format_Grayscale8); //to be sure
-		item->image->cv_mat = cv::Mat(inImage.height(), inImage.width(), CV_8UC1, inImage.bits(), (size_t) inImage.bytesPerLine()); //Taken from [1]; thanks!
-		cv::cv2eigen(item->image->cv_mat, item->image->eg_mat);
-		
-		item->pixmap = QPixmap::fromImage(inImage);
 		item->setIcon(item->pixmap);
 		ui->listWidget->addItem(item);
 		qApp->processEvents(); //maintain responsiveness
