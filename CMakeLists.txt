@@ -48,7 +48,7 @@ else()
 				Qt5
 				PREFIX ${QT_BUILD_DIR}
 				SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${QT_CONFIGURE} -no-freetype -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
+				CONFIGURE_COMMAND ${QT_CONFIGURE} -no-feature-network -no-freetype -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				INSTALL_COMMAND make install
 			)
@@ -57,7 +57,7 @@ else()
 				Qt5
 				PREFIX ${QT_BUILD_DIR}
 				SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${QT_CONFIGURE} -no-freetype -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
+				CONFIGURE_COMMAND ${QT_CONFIGURE} -no-feature-network -no-freetype -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				INSTALL_COMMAND make install
 			)

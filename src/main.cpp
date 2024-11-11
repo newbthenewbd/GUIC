@@ -1,5 +1,6 @@
 #include "main.h"
 
+// TODO This only works when the static plugins are available, fix
 #include <QtPlugin>
 #if _WIN32
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
