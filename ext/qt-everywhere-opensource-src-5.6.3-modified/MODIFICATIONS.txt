@@ -30,3 +30,6 @@ Modified 2024/11/09 by Czcibor Bohusz-Dobosz, fixing a broken goto?
 
 qtbase/src/network/socket/qnativesocketengine_win.cpp:
 Modified 2024/11/11 by Czcibor Bohusz-Dobosz to properly disable networks
+
+qtbase/src/network/socket/qlocalserver_win.cpp:
+Modified 2024/11/11 by Czcibor Bohusz-Dobosz to properly disable networks

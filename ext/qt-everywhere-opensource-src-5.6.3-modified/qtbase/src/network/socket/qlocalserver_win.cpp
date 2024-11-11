@@ -29,12 +29,16 @@
 **
 ** $QT_END_LICENSE$
 **
+** Modified 2024/11/11 by Czcibor Bohusz-Dobosz to properly disable networks
+**
 ****************************************************************************/
 
 #include "qlocalserver.h"
 #include "qlocalserver_p.h"
 #include "qlocalsocket.h"
 #include <QtCore/private/qsystemerror_p.h>
+
+#ifndef QT_NO_LOCALSERVER
 
 #include <qdebug.h>
 
@@ -334,3 +338,5 @@ void QLocalServerPrivate::waitForNewConnection(int msecs, bool *timedOut)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_LOCALSERVER
