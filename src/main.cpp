@@ -1,7 +1,7 @@
 #include "main.h"
 
 #include <qconfig.h>
-#if QT_STATIC
+#ifdef QT_STATIC
 
 #include <QtPlugin>
 #if _WIN32
