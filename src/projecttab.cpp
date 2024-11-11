@@ -20,6 +20,7 @@
 #include <QAction>
 #include <QComboBox>
 #include <QInputDialog>
+#include <QMessageBox>
 #include "imagelistitem.h"
 #include "opencorr.h"
 #include <omp.h>
@@ -101,17 +102,22 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 		QFileInfo fileInfo(*i);
 		ui->statusLabel->setText("Loading " + fileInfo.fileName() + "...");
 		
-		ImageListItem* item = new ImageListItem();
-		
-		item->image = new opencorr::Image2D(path.toStdString());
-		QImage image = QImage(item->image->cv_mat.data, item->image->width, item->image->height, item->image->width, QImage::Format_Grayscale8);
-		
-		item->pixmap = QPixmap::fromImage(image);
-		item->setText(fileInfo.fileName()); //TODO check if the name is unique
-		
-		item->setIcon(item->pixmap);
-		ui->listWidget->addItem(item);
-		qApp->processEvents(); //maintain responsiveness
+		try {
+			ImageListItem* item = new ImageListItem();
+			
+			item->image = new opencorr::Image2D(path.toStdString());
+			QImage image = QImage(item->image->cv_mat.data, item->image->width, item->image->height, item->image->width, QImage::Format_Grayscale8);
+			
+			item->pixmap = QPixmap::fromImage(image);
+			item->setText(fileInfo.fileName()); //TODO check if the name is unique
+			
+			item->setIcon(item->pixmap);
+			ui->listWidget->addItem(item);
+			qApp->processEvents(); //maintain responsiveness
+		} catch(...) {
+			QMessageBox::critical(nullptr, "Error", "Could not load " + fileInfo.fileName());
+			break;
+		}
 	}
 	ui->statusLabel->setText("Ready");
 }
