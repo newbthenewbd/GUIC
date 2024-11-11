@@ -39,7 +39,7 @@ else()
 	# Version 5.6.3 unfortunately did not yet use CMake for building itself,
 	# so it's a little bit harder
 	set(QT_BUILD_DIR ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified)
-	set(QT_CONFIGURE ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -qt-zlib -no-mtdev -no-gif -no-libpng -no-libjpeg -no-harfbuzz -no-openssl -no-libproxy -qt-pcre -no-xinput2 -no-pulseaudio -no-alsa -no-cups -no-iconv -no-evdev -no-tslib -no-icu -no-dbus -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${QT_BUILD_DIR})
+	set(QT_CONFIGURE ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc -no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -qt-zlib -no-mtdev -no-gif -no-libpng -no-libjpeg -no-harfbuzz -no-openssl -no-libproxy -qt-pcre -no-xinput2 -no-pulseaudio -no-alsa -no-cups -no-iconv -no-evdev -no-tslib -no-icu -no-dbus -no-eglfs -no-kms -no-gbm -no-directfb -no-linuxfb -no-mirclient -no-opengl -no-libinput -no-gstreamer -no-system-proxies -no-securetransport -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${QT_BUILD_DIR})
 	include(ProcessorCount)
 	ProcessorCount(NUM_PROCESSORS)
 	if(WIN32)
@@ -48,7 +48,7 @@ else()
 				Qt5
 				PREFIX ${QT_BUILD_DIR}
 				SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
+				CONFIGURE_COMMAND ${QT_CONFIGURE} -no-freetype -xplatform win32-g++ -device-option CROSS_COMPILE=i686-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				INSTALL_COMMAND make install
 			)
@@ -57,7 +57,7 @@ else()
 				Qt5
 				PREFIX ${QT_BUILD_DIR}
 				SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-				CONFIGURE_COMMAND ${QT_CONFIGURE} -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
+				CONFIGURE_COMMAND ${QT_CONFIGURE} -no-freetype -xplatform win32-g++ -device-option CROSS_COMPILE=x86_64-w64-mingw32-
 				BUILD_COMMAND make -j${NUM_PROCESSORS}
 				INSTALL_COMMAND make install
 			)
@@ -78,7 +78,7 @@ else()
 			Qt5
 			PREFIX ${QT_BUILD_DIR}
 			SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-			CONFIGURE_COMMAND ${QT_CONFIGURE} -platform macx-clang
+			CONFIGURE_COMMAND ${QT_CONFIGURE} -no-freetype -platform macx-clang
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
 			INSTALL_COMMAND make install
 		)

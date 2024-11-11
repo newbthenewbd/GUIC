@@ -3,6 +3,10 @@
 #include <QtPlugin>
 #if _WIN32
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+#elif __APPLE__
+Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin)
+#else
+Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
 #endif
 
 #include <QApplication>
