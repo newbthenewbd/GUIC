@@ -20,9 +20,9 @@ Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
 
 int main(int argc, char** argv) {
 	
+	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	
     QApplication app(argc, argv);
-    
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
 	MainWindow mainWindow;
 

@@ -264,14 +264,14 @@
               <property name="spacing">
                <number>0</number>
               </property>
-              <item alignment="">
+              <item>
                <widget class="QLabel" name="label_2">
                 <property name="text">
                  <string>&gt;Max</string>
                 </property>
                </widget>
               </item>
-              <item alignment="">
+              <item>
                <widget class="ColorPickerButton" name="aboveMaxColorButton"/>
               </item>
              </layout>
@@ -288,6 +288,12 @@
                 </property>
                 <item>
                  <widget class="QLabel" name="label_4">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="text">
                    <string>Max</string>
                   </property>
@@ -371,10 +377,10 @@
               <property name="spacing">
                <number>0</number>
               </property>
-              <item alignment="">
+              <item>
                <widget class="ColorPickerButton" name="belowMinColorButton"/>
               </item>
-              <item alignment="">
+              <item>
                <widget class="QLabel" name="label">
                 <property name="text">
                  <string>&lt;Min</string>
@@ -434,6 +440,12 @@
                 </property>
                 <item>
                  <widget class="QLabel" name="label_3">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="text">
                    <string>Min</string>
                   </property>
