@@ -27,3 +27,6 @@ Modified 2024/11/09 by Czcibor Bohusz-Dobosz in order to fix QFixed, ha ha
 
 qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm:
 Modified 2024/11/09 by Czcibor Bohusz-Dobosz, fixing a broken goto?
+
+qtbase/src/network/socket/qnativesocketengine_win.cpp:
+Modified 2024/11/11 by Czcibor Bohusz-Dobosz to properly disable networks
