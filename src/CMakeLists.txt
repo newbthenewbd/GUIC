@@ -45,6 +45,7 @@ elseif(TRUE)
 	#target_link_libraries(${TARGET_NAME} PRIVATE Qt5Widgets qwayland-egl wayland-egl qwayland-generic Qt5WaylandClient xkbcommon wayland-client wayland-cursor qxcb qxcb-egl-integration qxcb-glx-integration xcb-glx Qt5XcbQpa Xi SM ICE xcb-render xcb-image xcb-icccm xcb-sync xcb-xfixes xcb-shm xcb-randr xcb-shape xcb-keysyms qdds qicns qico qjp2 qmng qtga qtiff qwbmp qwebp qeglfs-x11-integration X11-xcb xcb Qt5EglDeviceIntegration Qt5PlatformSupport fontconfig freetype Qt5DBus Xrender Xext X11 Qt5Gui png qtharfbuzzng Qt5Core z icui18n icuuc icudata qtpcre m dl rt EGL GL pthread)
 	# From https://bugreports.qt.io/browse/QTBUG-38913 (accessed 2024/11/11; thanks!)
 	target_link_libraries(${TARGET_NAME} PRIVATE Qt5Widgets Qt5PlatformSupport Qt5Gui Qt5Core qtpcre m dl rt GL pthread)
+	target_compile_options(${TARGET_NAME} PRIVATE -I${QT_BUILD_DIR}/include -I${QT_BUILD_DIR}/include/QtCore -I${QT_BUILD_DIR}/include/QtGui -I${QT_BUILD_DIR}/include/QtWidgets)
 else()
 	add_dependencies(${TARGET_NAME} Qt5)
 	set_target_properties(${TARGET_NAME} PROPERTIES
