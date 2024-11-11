@@ -23,33 +23,29 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 )
 
 if(MINGW)
-	find_file(WINPTHREAD_LIB libwinpthread-1.dll)
-	find_file(GCC_LIB libgcc_s_dw2-1.dll)
-	find_file(OPENMP_LIB libgomp-1.dll)
-	find_file(STDCPP_LIB libstdc++-6.dll)
-	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		${WINPTHREAD_LIB}
-		${CMAKE_BINARY_DIR}/bin
-	)
-	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		${GCC_LIB}
-		${CMAKE_BINARY_DIR}/bin
-	)
-	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		${OPENMP_LIB}
-		${CMAKE_BINARY_DIR}/bin
-	)
-	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		${STDCPP_LIB}
-		${CMAKE_BINARY_DIR}/bin
-	)
+	target_link_libraries(${TARGET_NAME} PRIVATE -static libgcc libstdc++ libwinpthread  libgomp -dynamic)
 endif()
 
-if(NOT GUIC_USE_SYSTEM_QT)
+target_link_libraries(${TARGET_NAME} PRIVATE opencv_core opencv_features2d opencv_flann opencv_imgcodecs opencv_imgproc)
+if(NOT GUIC_USE_SYSTEM_OPENCV)
+	target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/core/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/features2d/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/flann/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/imgcodecs/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/imgproc/include")
+endif()
+
+if(GUIC_USE_SYSTEM_QT)
+	target_link_libraries(${TARGET_NAME} PRIVATE Qt5::Widgets)
+elseif(TRUE)
+	add_dependencies(${TARGET_NAME} Qt5)
+	set_target_properties(${TARGET_NAME} PROPERTIES
+		AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic
+	)
+	if(WIN32)
+		target_link_libraries(${TARGET_NAME} PRIVATE ws2_32)
+	endif()
+	target_link_directories(${TARGET_NAME} BEFORE PRIVATE ${QT_BUILD_DIR}/lib)
+	#target_link_libraries(${TARGET_NAME} PRIVATE Qt5Widgets qwayland-egl wayland-egl qwayland-generic Qt5WaylandClient xkbcommon wayland-client wayland-cursor qxcb qxcb-egl-integration qxcb-glx-integration xcb-glx Qt5XcbQpa Xi SM ICE xcb-render xcb-image xcb-icccm xcb-sync xcb-xfixes xcb-shm xcb-randr xcb-shape xcb-keysyms qdds qicns qico qjp2 qmng qtga qtiff qwbmp qwebp qeglfs-x11-integration X11-xcb xcb Qt5EglDeviceIntegration Qt5PlatformSupport fontconfig freetype Qt5DBus Xrender Xext X11 Qt5Gui png qtharfbuzzng Qt5Core z icui18n icuuc icudata qtpcre m dl rt EGL GL pthread)
+	# From https://bugreports.qt.io/browse/QTBUG-38913 (accessed 2024/11/11; thanks!)
+	target_link_libraries(${TARGET_NAME} PRIVATE Qt5Widgets Qt5PlatformSupport Qt5Gui Qt5Core qtpcre m dl rt GL pthread)
+else()
 	add_dependencies(${TARGET_NAME} Qt5)
 	set_target_properties(${TARGET_NAME} PROPERTIES
 		AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic
@@ -75,16 +71,9 @@ if(NOT GUIC_USE_SYSTEM_QT)
 			)
 		endforeach()
 	endif()
-else()
-	target_link_libraries(${TARGET_NAME} PRIVATE Qt5::Widgets)
 endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/verdigris/src")
-
-target_link_libraries(${TARGET_NAME} PRIVATE opencv_core opencv_features2d opencv_flann opencv_imgcodecs)
-if(NOT GUIC_USE_SYSTEM_OPENCV)
-	target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/core/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/features2d/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/flann/include" "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/modules/imgcodecs/include")
-endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/eigen" "${CMAKE_SOURCE_DIR}/ext/eigen/Eigen")
 
@@ -114,7 +103,7 @@ if(APPLE)
 	endif()
 endif()
 
-target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 file(GLOB_RECURSE OPENCORR_SRC CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.c" "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.cpp")
 file(GLOB_RECURSE OPENCORR_H CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.h" "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.hpp")

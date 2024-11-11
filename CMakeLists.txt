@@ -16,6 +16,22 @@ if(NOT DEFINED CMAKE_INSTALL_RPATH)
 	set(CMAKE_INSTALL_RPATH $ORIGIN)
 endif()
 
+if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
+if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
+option(GUIC_USE_SYSTEM_OPENCV "Use system-provided OpenCV" OFF)
+if(GUIC_USE_SYSTEM_OPENCV)
+	find_path(OpenCV_DIR OpenCVConfig.cmake "/opt/local/libexec/opencv4/cmake")
+	find_package(OpenCV REQUIRED)
+else()
+	include(cmake/ConfigOpenCV.cmake)
+endif()
+
 option(GUIC_USE_SYSTEM_QT "Use system-provided Qt5" OFF)
 if(GUIC_USE_SYSTEM_QT)
 	find_package(Qt5 REQUIRED COMPONENTS Widgets)
@@ -23,7 +39,7 @@ else()
 	# Version 5.6.3 unfortunately did not yet use CMake for building itself,
 	# so it's a little bit harder
 	set(QT_BUILD_DIR ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified)
-	set(QT_CONFIGURE ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -release -opensource -confirm-license -qt-zlib -no-mtdev -no-gif -no-libpng -no-libjpeg -no-harfbuzz -no-openssl -no-libproxy -qt-pcre -no-xinput2 -no-pulseaudio -no-alsa -no-cups -no-iconv -no-evdev -no-tslib -no-icu -no-dbus -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${QT_BUILD_DIR})
+	set(QT_CONFIGURE ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -qt-zlib -no-mtdev -no-gif -no-libpng -no-libjpeg -no-harfbuzz -no-openssl -no-libproxy -qt-pcre -no-xinput2 -no-pulseaudio -no-alsa -no-cups -no-iconv -no-evdev -no-tslib -no-icu -no-dbus -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${QT_BUILD_DIR})
 	include(ProcessorCount)
 	ProcessorCount(NUM_PROCESSORS)
 	if(WIN32)
@@ -71,29 +87,23 @@ else()
 	set(Qt5Core_VERSION_MINOR 6)
 endif()
 
-option(GUIC_USE_SYSTEM_OPENCV "Use system-provided OpenCV" OFF)
-if(GUIC_USE_SYSTEM_OPENCV)
-	find_path(OpenCV_DIR OpenCVConfig.cmake "/opt/local/libexec/opencv4/cmake")
-	find_package(OpenCV REQUIRED)
-else()
-	set(BUILD_SHARED_LIBS OFF)
-	set(BUILD_opencv_apps OFF)
-	set(BUILD_EXAMPLES OFF)
-	set(BUILD_PERF_TESTS OFF)
-	set(BUILD_TESTS OFF)
-	set(BUILD_LIST core features2d flann imgcodecs)
-	add_subdirectory(ext/opencv-4.10.0)
-endif()
-
 # 64-bit floating point version of FFTW
-#set(HAVE_STRING_H 1) # Why did I put this here again?
-set(BUILD_SHARED_LIBS OFF)
-set(BUILD_TESTS OFF)
-set(ENABLE_SSE ON)
-set(ENABLE_SSE2 ON)
-set(ENABLE_THREADS ON)
-set(DISABLE_FORTRAN ON)
-add_subdirectory(ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftw-3.3.10)
+# workaround OLD CMP0077 - see https://stackoverflow.com/a/62702897
+# (accessed 2024/11/11; thanks!)
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+set(BUILD_TESTS OFF CACHE INTERNAL "")
+set(ENABLE_OPENMP OFF CACHE INTERNAL "")
+set(ENABLE_THREADS ON CACHE INTERNAL "")
+set(WITH_COMBINED_THREADS OFF CACHE INTERNAL "")
+set(ENABLE_FLOAT OFF CACHE INTERNAL "")
+set(ENABLE_LONG_DOUBLE OFF CACHE INTERNAL "")
+set(ENABLE_QUAD_PRECISION OFF CACHE INTERNAL "")
+set(ENABLE_SSE ON CACHE INTERNAL "")
+set(ENABLE_SSE2 ON CACHE INTERNAL "")
+set(ENABLE_AVX OFF CACHE INTERNAL "")
+set(ENABLE_AVX2 OFF CACHE INTERNAL "")
+set(DISABLE_FORTRAN ON CACHE INTERNAL "")
+add_subdirectory(${CMAKE_SOURCE_DIR}/ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftw-3.3.10)
 
 # Explicitly disable the unity build optimization for FFTW, as it breaks
 # Also, if WIN32, use FFTW's builtin malloc
@@ -106,8 +116,8 @@ foreach(target ${FFTW_TARGETS})
 endforeach()
 
 # 32-bit floating point version of FFTW - options as above plus this
-set(ENABLE_FLOAT ON)
-add_subdirectory(ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftwf-3.3.10)
+set(ENABLE_FLOAT ON CACHE INTERNAL "" FORCE)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ext/fftw-3.3.10 ${CMAKE_BINARY_DIR}/ext/fftwf-3.3.10)
 
 # Explicitly disable the unity build optimization for the other FFTW too...
 get_property(FFTWF_TARGETS DIRECTORY ${CMAKE_BINARY_DIR}/ext/fftwf-3.3.10 PROPERTY BUILDSYSTEM_TARGETS)
@@ -118,22 +128,14 @@ foreach(target ${FFTWF_TARGETS})
 	endif()
 endforeach()
 
-option(NANOFLANN_BUILD_EXAMPLES "" OFF)
-option(NANOFLANN_BUILD_TESTS "" OFF)
-option(MASTER_PROJECT_HAS_TARGET_UNINSTALL "" ON)
-add_subdirectory(ext/nanoflann)
+set(NANOFLANN_BUILD_EXAMPLES OFF CACHE INTERNAL "")
+set(NANOFLANN_BUILD_TESTS OFF CACHE INTERNAL "")
+set(MASTER_PROJECT_HAS_TARGET_UNINSTALL ON CACHE INTERNAL "")
+add_subdirectory(${CMAKE_SOURCE_DIR}/ext/nanoflann)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-endif()
-
-if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-endif()
-
-add_subdirectory(src)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src)
