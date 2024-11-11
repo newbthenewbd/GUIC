@@ -119,5 +119,5 @@ target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/OpenC
 
 target_link_options(${TARGET_NAME} PRIVATE -static-libgcc -static-libstdc++)
 if(MINGW)
-	target_link_libraries(${TARGET_NAME} PRIVATE -l:libwinpthread.a)
+	target_link_libraries(${TARGET_NAME} PRIVATE -static winpthread gomp -dynamic)
 endif()
