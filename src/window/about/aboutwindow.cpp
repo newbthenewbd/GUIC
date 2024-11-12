@@ -1,9 +1,5 @@
 #include "aboutwindow.h"
-#define W_NO_PROPERTY_MACRO
-#include <wobjectimpl.h>
 #include "ui_aboutwindow.h"
-
-W_OBJECT_IMPL(AboutWindow)
 
 AboutWindow::AboutWindow(QWidget *parent) :
 QDialog(parent),

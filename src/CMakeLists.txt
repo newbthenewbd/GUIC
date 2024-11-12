@@ -1,22 +1,19 @@
 set(TARGET_NAME ${CMAKE_PROJECT_NAME})
 
-#file(GLOB_RECURSE src CONFIGURE_DEPENDS "*.c" "*.cpp" "*.ui")
+# Add all the sources automatically, for the programmer to be happy
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "*.c" "*.cpp" "*.ui")
+add_executable(${TARGET_NAME} ${SOURCES})
+target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/ext")
 
-add_executable(${TARGET_NAME}
-	main.cpp
-	mainwindow.h mainwindow.cpp mainwindow.ui
-	main.h
-	projecttab.h projecttab.cpp projecttab.ui
-	imagelistwidget.h
-	imagelistitem.h
-	../ext/tinycolormap.hpp
-	colormapwidget.h
-	colorpickerbutton.h
-	sceneview.h
-	sceneview.cpp
-	colormapwidget.cpp
-	aboutwindow.h aboutwindow.cpp aboutwindow.ui
-)
+# Add all the subdirectories as include dirs, for AUTOMOC/UIC to be happy
+# with the happy programmer's includes... Otherwise, it will try to include
+# e.g. "colormapwidget.h" from its custom directory
+file(GLOB_RECURSE INCLUDE_DIRS CONFIGURE_DEPENDS LIST_DIRECTORIES true "*")
+foreach(item ${INCLUDE_DIRS})
+	if(IS_DIRECTORY ${item})
+		target_include_directories(${TARGET_NAME} PRIVATE ${item})
+	endif()
+endforeach()
 
 set_target_properties(${TARGET_NAME} PROPERTIES
 	WIN32_EXECUTABLE ON
@@ -30,9 +27,10 @@ endif()
 
 if(GUIC_USE_SYSTEM_QT)
 	target_link_libraries(${TARGET_NAME} PRIVATE Qt5::Widgets)
-elseif(TRUE)
+else()
 	add_dependencies(${TARGET_NAME} Qt5)
 	set_target_properties(${TARGET_NAME} PROPERTIES
+		AUTOMOC_EXECUTABLE ${QT_BUILD_DIR}/bin/moc
 		AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic
 	)
 	if(WIN32)
@@ -42,14 +40,18 @@ elseif(TRUE)
 	if(WIN32)
 		target_link_libraries(${TARGET_NAME} PRIVATE Qt5Widgets qwindows winspool shlwapi Qt5PlatformSupport Qt5Gui comdlg32 oleaut32 imm32 winmm glu32 opengl32 gdi32 qtharfbuzzng Qt5Core ole32 uuid ws2_32 advapi32 shell32 user32 kernel32 mpr qtpcre m)
 	elseif(APPLE)
-		target_link_libraries(${TARGET_NAME} PRIVATE qcocoa "-framework Cocoa" "-framework Carbon" "-framework IOKit" cups Qt5PlatformSupport "-framework DiskArbitration" "-framework Foundation" "-framework CoreServices" "-framework AppKit" "-framework ApplicationServices" "-framework CoreFoundation" "-framework OpenGL" "-framework AGL" Qt5PrintSupport Qt5Widgets Qt5Gui Qt5Core qtpcre m)
+		target_link_libraries(${TARGET_NAME} PRIVATE qcocoa "-framework Cocoa" "-framework Carbon" "-framework IOKit" cups Qt5PlatformSupport "-framework DiskArbitration" "-framework Foundation" "-framework CoreServices" "-framework AppKit" "-framework ApplicationServices" "-framework CoreFoundation" "-framework OpenGL" "-framework AGL" Qt5PrintSupport Qt5Widgets Qt5Gui qtharfbuzzng Qt5Core qtpcre m)
 	else()
 		target_link_libraries(${TARGET_NAME} PRIVATE Qt5Widgets Qt5PlatformSupport Qt5Gui Qt5Core qtpcre m GL pthread) # TODO make based on prl
 	endif()
+	if(GUIC_USE_SYSTEM_OPENCV)
+		# Non-system OpenCV provides Qt with zlib and libpng...
+		file(GLOB_RECURSE LIBPNG_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/ext/opencv-4.10.0/3rdparty/libpng/*.c")
+		target_sources(${TARGET_NAME} PRIVATE ${LIBPNG_SOURCES})
+		target_link_libraries(${TARGET_NAME} PRIVATE z)
+	endif()
 	target_compile_options(${TARGET_NAME} PRIVATE -I${QT_BUILD_DIR}/include -I${QT_BUILD_DIR}/include/QtCore -I${QT_BUILD_DIR}/include/QtGui -I${QT_BUILD_DIR}/include/QtWidgets)
 endif()
-
-target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/verdigris/src")
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/ext/eigen" "${CMAKE_SOURCE_DIR}/ext/eigen/Eigen")
 
@@ -78,8 +80,6 @@ if(APPLE)
 		target_link_directories(${TARGET_NAME} PRIVATE ${OpenMP_LIBRARIES})
 	endif()
 endif()
-
-target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 file(GLOB_RECURSE OPENCORR_SRC CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.c" "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.cpp")
 file(GLOB_RECURSE OPENCORR_H CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.h" "${CMAKE_SOURCE_DIR}/ext/OpenCorr/src/*.hpp")

@@ -1,7 +1,5 @@
 #include "projecttab.h"
 #include "ui_projecttab.h"
-#define W_NO_PROPERTY_MACRO
-#include <wobjectimpl.h>
 #include <QObject>
 #include <QEvent>
 #include <QFileDialog>
@@ -14,23 +12,21 @@
 #include <QPixmap>
 #include <QImage>
 #include <QStringList>
-#include <QListWidgetItem>
 #include <QStyleFactory>
 #include <QMenu>
 #include <QAction>
 #include <QComboBox>
 #include <QInputDialog>
 #include <QMessageBox>
-#include "imagelistitem.h"
-#include "opencorr.h"
+#include <opencorr.h>
+#include "imagelistitemwidget.h"
+#include "model/imagelistitemdata.h"
 #include <omp.h>
 #include <opencv2/opencv.hpp>
 //#include <opencv2/world.hpp>
 #define TINYCOLORMAP_WITH_QT5
 #include "../ext/tinycolormap.hpp"
 #include <vector>
-
-W_OBJECT_IMPL(ProjectTab)
 
 ProjectTab::ProjectTab(QWidget* parent) :
 QWidget(parent),
@@ -103,13 +99,17 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 		ui->statusLabel->setText("Loading " + fileInfo.fileName() + "...");
 		
 		try {
-			ImageListItem* item = new ImageListItem();
-			
-			item->image = new opencorr::Image2D(path.toStdString());
-			QImage image = QImage(item->image->cv_mat.data, item->image->width, item->image->height, item->image->width, QImage::Format_Grayscale8);
+			ImageListItemWidget* item = new ImageListItemWidget();
 			item->setText(fileInfo.fileName()); //TODO check if the name is unique
 			
-			item->setIcon(QPixmap::fromImage(image));
+			ImageListItemData* data = new ImageListItemData();
+			item->setData(data);
+			
+			data->image = new opencorr::Image2D(path.toStdString());
+			
+			data->pixmap = QPixmap::fromImage(QImage(data->image->cv_mat.data, data->image->width, data->image->height, data->image->width, QImage::Format_Grayscale8));
+			
+			item->setIcon(data->pixmap);
 			ui->listWidget->addItem(item);
 			qApp->processEvents(); //maintain responsiveness
 		} catch(...) {
@@ -235,11 +235,12 @@ void ProjectTab::solve()
 	
 	for(int i = 0; i < ui->listWidget->count(); i++)
 	{
-		ImageListItem* item = (ImageListItem*) ui->listWidget->item(i);
+		ImageListItemWidget* item = (ImageListItemWidget*) ui->listWidget->item(i);
+		ImageListItemData* data = item->data();
 		
 		if(i == 0)
 		{
-			refImage = item->image;
+			refImage = data->image;
 			continue;
 		}
 		
@@ -253,7 +254,7 @@ void ProjectTab::solve()
 			nr = new opencorr::NR2D1(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
 			strain = new opencorr::Strain(strainRadius, minNeighbors, omp_get_num_procs());
 			
-			if(item->poi.empty())
+			if(data->poi.empty())
 			{
 				for(int y = 772; y < 1468; y++)
 				{
@@ -265,14 +266,14 @@ void ProjectTab::solve()
 						}
 					}
 				}
-			} else poi = item->poi;
+			} else poi = data->poi;
 		}
 		
-		fftcc->setImages(*refImage, *item->image);
+		fftcc->setImages(*refImage, *(data->image));
 		fftcc->prepare();
 		fftcc->compute(poi);
 		
-		nr->setImages(*refImage, *item->image);
+		nr->setImages(*refImage, *(data->image));
 		nr->prepare();
 		nr->compute(poi);
 		
@@ -280,7 +281,7 @@ void ProjectTab::solve()
 		strain->prepare(poi);
 		strain->compute(poi);
 		
-		item->poi = poi;
+		data->poi = poi;
 	}
 	
 	ui->statusLabel->setText("Ready");
@@ -312,17 +313,19 @@ static void drawArrow(QGraphicsScene* scene, double fromX, double fromY, double 
 
 void ProjectTab::displayImage()
 {
-	ImageListItem* item = (ImageListItem*) ui->listWidget->currentItem();
+	ImageListItemWidget* item = (ImageListItemWidget*) ui->listWidget->currentItem();
 	if(item == NULL) return;
 	
+	ImageListItemData* data = item->data(); 
+	
 	scene->clear();
-	QGraphicsPixmapItem* pi = new QGraphicsPixmapItem(item->pixmap);
+	QGraphicsPixmapItem* pi = new QGraphicsPixmapItem(data->pixmap);
 	scene->addItem(pi);
 	
 	float minDisplacement = FLT_MAX, maxDisplacement = FLT_MIN;
 	float minStrain = FLT_MAX, maxStrain = FLT_MIN;
 	
-	for(opencorr::POI2D& i : item->poi) //only for minima and maxima
+	for(opencorr::POI2D& i : data->poi) //only for minima and maxima
 	{
 		if(displayType.unit == UNIT_TYPE_DEFORMATION)
 		{
@@ -365,7 +368,7 @@ void ProjectTab::displayImage()
 	ui->colormap->update();
 	
 	
-	for(opencorr::POI2D& i : item->poi)
+	for(opencorr::POI2D& i : data->poi)
 	{
 		if(displayType.unit == UNIT_TYPE_DEFORMATION)
 		{

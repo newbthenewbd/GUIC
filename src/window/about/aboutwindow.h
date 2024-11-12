@@ -1,8 +1,6 @@
 #ifndef ABOUTWINDOW_H
 #define ABOUTWINDOW_H
 
-#define W_NO_PROPERTY_MACRO
-#include <wobjectdefs.h>
 #include <QDialog>
 
 namespace Ui {
@@ -11,8 +9,7 @@ namespace Ui {
 
 class AboutWindow : public QDialog
 {
-    //Q_OBJECT
-    W_OBJECT(AboutWindow)
+    Q_OBJECT
     
     public:
     explicit AboutWindow(QWidget *parent = nullptr);
@@ -20,7 +17,6 @@ class AboutWindow : public QDialog
     
     private slots:
     void on_pushButton_clicked();
-    W_SLOT(on_pushButton_clicked)
     
     private:
     Ui::AboutWindow *ui;

@@ -135,7 +135,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/ext/nanoflann)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)

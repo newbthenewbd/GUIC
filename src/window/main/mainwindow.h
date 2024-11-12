@@ -1,9 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#define W_NO_PROPERTY_MACRO
-#include <wobjectdefs.h>
 #include <QMainWindow>
+#include <QCloseEvent>
 #include <QTabWidget>
 
 namespace Ui {
@@ -12,12 +11,12 @@ namespace Ui {
 
 class MainWindow : public QMainWindow
 {
-	//Q_OBJECT
-	W_OBJECT(MainWindow)
+	Q_OBJECT
 	
 	public:
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
+	void closeEvent(QCloseEvent* event);
 	QTabWidget* tabWidget;
 	
 	public slots:
@@ -27,8 +26,13 @@ class MainWindow : public QMainWindow
 	void openProject();
 	
 	private slots:
+	void on_actionOpen_Project_triggered();
+	
+	private slots:
+	void on_actionNew_Project_triggered();
+	
+	private slots:
 	void on_actionAbout_GUIC_triggered();
-	W_SLOT(on_actionAbout_GUIC_triggered)
 	
 	private:
 	Ui::MainWindow *ui;

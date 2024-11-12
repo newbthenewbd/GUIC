@@ -1,5 +1,9 @@
 #include "main.h"
+#include <QApplication>
+#include <QStackedWidget>
+#include "window/main/mainwindow.h"
 
+// Manually include the GUI plugins for static builds
 #include <qconfig.h>
 #ifdef QT_STATIC
 
@@ -14,20 +18,29 @@ Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
 
 #endif
 
-#include <QApplication>
-#include <QStackedWidget>
-#include "mainwindow.h"
+#if __APPLE__
+#include <objc/runtime.h>
+#include <objc/message.h>
+#endif
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
+	// Get rid of MacOS duplicated tabs
+	// See https://stackoverflow.com/q/39399553 (accessed 2024/11/12; thanks!)
+	// ...yes, I'm a C programmer, why do you ask?
+#if __APPLE__
+	((id (*)(Class, SEL, bool)) objc_msgSend)(objc_getClass("NSWindow"), sel_getUid("setAllowsAutomaticWindowTabbing:"), false);
+#endif
 	
 	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	
 	QApplication app(argc, argv);
+	
+	app.setStyle("Fusion");
 
 	MainWindow mainWindow;
 
 	mainWindow.showMaximized();
 	
 	return app.exec();
-	
 }

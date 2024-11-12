@@ -1,10 +1,6 @@
 #include "sceneview.h"
-#define W_NO_PROPERTY_MACRO
-#include <wobjectimpl.h>
 #include <QTransform>
 #include <cmath>
-
-W_OBJECT_IMPL(SceneView)
 
 double SceneView::getScale()
 {

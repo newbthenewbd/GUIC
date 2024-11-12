@@ -1,12 +1,9 @@
 #include "colormapwidget.h"
-#define W_NO_PROPERTY_MACRO
-#include <wobjectimpl.h>
 #include <QPainter>
 #include <QLinearGradient>
 #include <QGradientStops>
 #include <QColor>
 
-W_OBJECT_IMPL(ColorMapWidget)
 
 QColor ColorMapWidget::getColor(double value)
 {

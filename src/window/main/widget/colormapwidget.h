@@ -1,17 +1,14 @@
 #ifndef COLORMAPWIDGET_H
 #define COLORMAPWIDGET_H
 
-#define W_NO_PROPERTY_MACRO
-#include <wobjectdefs.h>
 #include <QWidget>
 #include <QString>
 #define TINYCOLORMAP_WITH_QT5
-#include "../ext/tinycolormap.hpp"
+#include <tinycolormap.hpp>
 
 class ColorMapWidget : public QWidget
 {
-	//Q_OBJECT
-	W_OBJECT(ColorMapWidget)
+	Q_OBJECT
 	
 	using QWidget::QWidget; //constructors
 	
@@ -22,7 +19,7 @@ class ColorMapWidget : public QWidget
 	QString unit;
 	
 	signals:
-	void unitChanged(QString unit) W_SIGNAL(unitChanged, unit)
+	void unitChanged(QString unit);
 	
 	public:
 	void setColormap(tinycolormap::ColormapType type);
@@ -33,11 +30,8 @@ class ColorMapWidget : public QWidget
 	
 	public slots:
 	void setMinValue(double value);
-	W_SLOT(setMinValue)
 	void setMaxValue(double value);
-	W_SLOT(setMaxValue)
 	void setUnit(QString unit);
-	W_SLOT(setUnit)
 	
 	protected:
 	void paintEvent(QPaintEvent* event) override;

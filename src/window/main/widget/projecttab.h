@@ -1,8 +1,6 @@
 #ifndef PROJECTTAB_H
 #define PROJECTTAB_H
 
-#define W_NO_PROPERTY_MACRO
-#include <wobjectdefs.h>
 #include <QObject>
 #include <QEvent>
 #include <QWidget>
@@ -36,8 +34,7 @@ namespace Ui {
 
 class ProjectTab : public QWidget
 {
-	//Q_OBJECT
-	W_OBJECT(ProjectTab)
+	Q_OBJECT
 	
 	private:
 	Ui::ProjectTab* ui;
@@ -70,21 +67,13 @@ class ProjectTab : public QWidget
 	
 	public slots:
 	void addImages();
-	W_SLOT(addImages)
 	void addImagesFromPaths(QStringList paths);
-	W_SLOT(addImagesFromPaths)
 	void displayImage();
-	W_SLOT(displayImage)
 	void displaySelected(int displayId);
-	W_SLOT(displaySelected)
 	void colormapSelected(int colormapId);
-	W_SLOT(colormapSelected)
 	void solverChanged(QAction* action);
-	W_SLOT(solverChanged, (QAction*))
 	void unitsChanged(QAction* action);
-	W_SLOT(unitsChanged, (QAction*))
 	void solve();
-	W_SLOT(solve)
 };
 
 #endif // PROJECTTAB_H

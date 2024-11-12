@@ -1,7 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#define W_NO_PROPERTY_MACRO
-#include <wobjectimpl.h>
 #include <QApplication>
 #include <QStackedWidget>
 #include <QStyle>
@@ -10,10 +8,8 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QTabBar> //for tabBar()
-#include "projecttab.h"
-#include "aboutwindow.h"
-
-W_OBJECT_IMPL(MainWindow)
+#include "widget/projecttab.h"
+#include "window/about/aboutwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 QMainWindow(parent),
@@ -79,9 +75,23 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
+void MainWindow::on_actionNew_Project_triggered()
+{
+	newProject();
+}
+
+void MainWindow::on_actionOpen_Project_triggered()
+{
+	openProject();
+}
+
 void MainWindow::on_actionAbout_GUIC_triggered()
 {
 	AboutWindow about;
 	about.exec();
 }
 
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    QMainWindow::closeEvent(event);
+}
