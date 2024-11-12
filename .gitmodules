@@ -1,6 +1,3 @@
-[submodule "ext/verdigris"]
-	path = ext/verdigris
-	url = https://github.com/woboq/verdigris.git
 [submodule "ext/OpenCorr"]
 	path = ext/OpenCorr
 	url = https://github.com/newbthenewbd/OpenCorr.git
