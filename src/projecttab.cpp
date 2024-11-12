@@ -27,7 +27,7 @@
 #include <opencv2/opencv.hpp>
 //#include <opencv2/world.hpp>
 #define TINYCOLORMAP_WITH_QT5
-#include "tinycolormap.hpp"
+#include "../ext/tinycolormap.hpp"
 #include <vector>
 
 W_OBJECT_IMPL(ProjectTab)
@@ -138,23 +138,23 @@ void ProjectTab::displaySelected(int displayId)
 
 void ProjectTab::colormapSelected(int colormapId)
 {
-    tinycolormap::ColormapType colormapBoxTypes[] = { //TODO refactor out... along with the whole selector
-        tinycolormap::ColormapType::Heat,
-        tinycolormap::ColormapType::Turbo,
-        tinycolormap::ColormapType::Jet,
-        tinycolormap::ColormapType::Parula,
-        tinycolormap::ColormapType::Hot,
-        tinycolormap::ColormapType::Gray,
-        tinycolormap::ColormapType::Magma,
-        tinycolormap::ColormapType::Inferno,
-        tinycolormap::ColormapType::Plasma,
-        tinycolormap::ColormapType::Viridis,
-        tinycolormap::ColormapType::Cividis,
-        tinycolormap::ColormapType::Github,
-        tinycolormap::ColormapType::Cubehelix,
-        tinycolormap::ColormapType::HSV
-    };
-    ui->colormap->setColormap(colormapBoxTypes[colormapId]);
+	tinycolormap::ColormapType colormapBoxTypes[] = { //TODO refactor out... along with the whole selector
+		tinycolormap::ColormapType::Heat,
+		tinycolormap::ColormapType::Turbo,
+		tinycolormap::ColormapType::Jet,
+		tinycolormap::ColormapType::Parula,
+		tinycolormap::ColormapType::Hot,
+		tinycolormap::ColormapType::Gray,
+		tinycolormap::ColormapType::Magma,
+		tinycolormap::ColormapType::Inferno,
+		tinycolormap::ColormapType::Plasma,
+		tinycolormap::ColormapType::Viridis,
+		tinycolormap::ColormapType::Cividis,
+		tinycolormap::ColormapType::Github,
+		tinycolormap::ColormapType::Cubehelix,
+		tinycolormap::ColormapType::HSV
+	};
+	ui->colormap->setColormap(colormapBoxTypes[colormapId]);
 	ui->belowMinColorButton->setColor(ui->colormap->getColor(0.0));
 	ui->aboveMaxColorButton->setColor(ui->colormap->getColor(1.0));
 	displayImage();

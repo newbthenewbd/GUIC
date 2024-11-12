@@ -8,12 +8,12 @@
 
 class ImageListItem : public QListWidgetItem
 {
-    using QListWidgetItem::QListWidgetItem; //constructors
-    
-    public:
-    QPixmap pixmap;
-    opencorr::Image2D* image;
-    std::vector<opencorr::POI2D> poi = {};
+	using QListWidgetItem::QListWidgetItem; //constructors
+	
+	public:
+	QPixmap pixmap;
+	opencorr::Image2D* image;
+	std::vector<opencorr::POI2D> poi = {};
 };
 
 #endif // IMAGELISTITEM_H

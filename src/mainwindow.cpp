@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QTabBar> //for tabBar()
 #include "projecttab.h"
+#include "aboutwindow.h"
 
 W_OBJECT_IMPL(MainWindow)
 
@@ -77,3 +78,10 @@ MainWindow::~MainWindow()
 {
 	delete ui;
 }
+
+void MainWindow::on_actionAbout_GUIC_triggered()
+{
+	AboutWindow about;
+	about.exec();
+}
+

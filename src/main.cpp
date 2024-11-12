@@ -22,12 +22,12 @@ int main(int argc, char** argv) {
 	
 	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	
-    QApplication app(argc, argv);
+	QApplication app(argc, argv);
 
 	MainWindow mainWindow;
 
 	mainWindow.showMaximized();
 	
-    return app.exec();
+	return app.exec();
 	
 }

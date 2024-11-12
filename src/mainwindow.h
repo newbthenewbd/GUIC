@@ -7,27 +7,31 @@
 #include <QTabWidget>
 
 namespace Ui {
-    class MainWindow;
+	class MainWindow;
 }
 
 class MainWindow : public QMainWindow
 {
-    //Q_OBJECT
-    W_OBJECT(MainWindow)
-    
-    public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
-    QTabWidget* tabWidget;
-    
-    public slots:
-    void changeTab(int index);
-    void closeTab(int index);
-    void newProject();
-    void openProject();
-    
-    private:
-    Ui::MainWindow *ui;
+	//Q_OBJECT
+	W_OBJECT(MainWindow)
+	
+	public:
+	explicit MainWindow(QWidget *parent = nullptr);
+	~MainWindow();
+	QTabWidget* tabWidget;
+	
+	public slots:
+	void changeTab(int index);
+	void closeTab(int index);
+	void newProject();
+	void openProject();
+	
+	private slots:
+	void on_actionAbout_GUIC_triggered();
+	W_SLOT(on_actionAbout_GUIC_triggered)
+	
+	private:
+	Ui::MainWindow *ui;
 };
 
 #endif // MAINWINDOW_H
