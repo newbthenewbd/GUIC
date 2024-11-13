@@ -382,6 +382,8 @@ void ProjectTab::displayImage()
 		}
 		else if(displayType.unit == UNIT_TYPE_STRAIN)
 		{
+            float displacementX = i.deformation.u;
+            float displacementY = i.deformation.v;
 			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
 			
 			QColor color = ui->colormap->getColor((strain - minStrain) / (maxStrain - minStrain));
@@ -390,6 +392,7 @@ void ProjectTab::displayImage()
 		}
 	}
 }
+
 
 bool ProjectTab::eventFilter(QObject* object, QEvent* event)
 {
