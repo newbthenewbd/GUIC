@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QString>
 #define TINYCOLORMAP_WITH_QT5
-#include <tinycolormap.hpp>
+#include <ext/tinycolormap.hpp>
 
 class ColorMapWidget : public QWidget
 {
