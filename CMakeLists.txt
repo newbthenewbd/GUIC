@@ -39,11 +39,22 @@ else()
 	# Version 5.6.3 unfortunately did not yet use CMake for building itself,
 	# so it's a little bit harder
 	set(QT_BUILD_DIR ${CMAKE_BINARY_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified)
-	set(QT_CONFIGURE ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc -no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-qml-debug -qt-zlib -no-mtdev -no-gif -system-libpng -I ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/src/3rdparty/libpng -no-libjpeg -no-openssl -no-libproxy -qt-pcre -no-xinput2 -no-pulseaudio -no-alsa -no-iconv -no-evdev -no-tslib -no-icu -no-pch -no-ltcg -no-dbus -no-eglfs -no-kms -no-gbm -no-directfb -no-linuxfb -no-mirclient -no-feature-codecs -no-feature-big_codecs -no-feature-ftp -no-feature-http -no-feature-udpsocket -no-feature-networkproxy -no-feature-socks5 -no-feature-networkinterface -no-feature-networkdiskcache -no-feature-bearermanagement -no-feature-localserver -no-libinput -no-gstreamer -no-system-proxies -no-securetransport -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${QT_BUILD_DIR})
+		set(QT_CONFIGURE ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -release -opensource -confirm-license -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc -no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-qml-debug -qt-zlib -no-mtdev -no-gif -system-libpng -I ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/qtbase/src/3rdparty/libpng -no-libjpeg -no-openssl -no-libproxy -qt-pcre -no-xinput2 -no-pulseaudio -no-alsa -no-iconv -no-evdev -no-tslib -no-icu -no-pch -no-ltcg -no-dbus -no-eglfs -no-kms -no-gbm -no-directfb -no-linuxfb -no-mirclient -no-feature-codecs -no-feature-big_codecs -no-feature-ftp -no-feature-http -no-feature-udpsocket -no-feature-networkproxy -no-feature-socks5 -no-feature-networkinterface -no-feature-networkdiskcache -no-feature-bearermanagement -no-feature-localserver -no-libinput -no-gstreamer -no-system-proxies -no-securetransport -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${QT_BUILD_DIR})
 	include(ProcessorCount)
 	ProcessorCount(NUM_PROCESSORS)
 	if(WIN32)
-		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+		if(CMAKE_HOST_WIN32)
+			# MinGW Makefiles and configure.bat, it's pretty limited relative to the others
+			# so give it a special config, good for debugging
+			ExternalProject_Add(
+				Qt5
+				PREFIX ${QT_BUILD_DIR}
+				SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
+				CONFIGURE_COMMAND ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified/configure -static -debug -opensource -confirm-license -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc -no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-qml-debug -qt-zlib -no-mtdev -no-gif -qt-libpng -no-libjpeg -no-openssl -no-libproxy -qt-pcre -no-iconv -no-evdev -no-icu -no-pch -no-ltcg -no-dbus -no-system-proxies -make libs -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdeclarative -skip qtdoc -skip qtenginio -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtquickcontrols -skip qtquickcontrols2 -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtsvg -skip qttools -skip qttranslations -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebsockets -skip qtwebview -skip qtwinextras -skip qtx11extras -skip qtxmlpatterns -prefix ${QT_BUILD_DIR} -no-freetype -opengl desktop -platform win32-g++
+				BUILD_COMMAND make -j${NUM_PROCESSORS}
+				INSTALL_COMMAND make install
+			)
+		elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			ExternalProject_Add(
 				Qt5
 				PREFIX ${QT_BUILD_DIR}
@@ -78,7 +89,7 @@ else()
 			Qt5
 			PREFIX ${QT_BUILD_DIR}
 			SOURCE_DIR ${CMAKE_SOURCE_DIR}/ext/qt-everywhere-opensource-src-5.6.3-modified
-			CONFIGURE_COMMAND ${QT_CONFIGURE} -no-freetype -platform macx-clang
+			CONFIGURE_COMMAND ${QT_CONFIGURE} -no-xinput2 -no-freetype -platform macx-clang
 			BUILD_COMMAND make -j${NUM_PROCESSORS}
 			INSTALL_COMMAND make install
 		)

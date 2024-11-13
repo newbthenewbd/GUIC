@@ -3,7 +3,7 @@ set(TARGET_NAME ${CMAKE_PROJECT_NAME})
 # Add all the sources automatically, for the programmer to be happy
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "*.c" "*.cpp" "*.ui")
 add_executable(${TARGET_NAME} ${SOURCES})
-target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/ext")
+target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/src")
 
 # Add all the subdirectories as include dirs, for AUTOMOC/UIC to be happy
 # with the happy programmer's includes... Otherwise, it will try to include
