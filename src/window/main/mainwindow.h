@@ -20,21 +20,20 @@ class MainWindow : public QMainWindow
 	QTabWidget* tabWidget;
 	
 	public slots:
-	void changeTab(int index);
-	void closeTab(int index);
 	void newProject();
 	void openProject();
-	
+    // void saveProject();
+    // void closeProject();
+    // void closeWindow();
+
 	private slots:
+    void on_tabWidget_currentChanged(int index);
+    void on_tabWidget_tabCloseRequested(int index);
 	void on_actionOpen_Project_triggered();
-	
-	private slots:
 	void on_actionNew_Project_triggered();
-	
-	private slots:
-	void on_actionAbout_GUIC_triggered();
-	
-	private:
+    void on_actionAbout_GUIC_triggered();
+
+private:
 	Ui::MainWindow *ui;
 };
 

@@ -23,11 +23,6 @@ ui(new Ui::MainWindow)
 	tabWidget->tabBar()->setTabButton(0, QTabBar::LeftSide, 0);
 	tabWidget->tabBar()->setTabButton(0, QTabBar::RightSide, 0);
 	
-	//connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(changeTab(int)));
-	//connect(tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
-	connect(tabWidget, &QTabWidget::currentChanged, this, &MainWindow::changeTab);
-	connect(tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);
-	
 	ui->newProjectButton->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
 	ui->newProjectButton->setIconSize(QSize(qApp->desktop()->logicalDpiX(), qApp->desktop()->logicalDpiY()));
 	ui->openProjectButton->setIcon(style()->standardIcon(QStyle::SP_DirOpenIcon));
@@ -37,42 +32,42 @@ ui(new Ui::MainWindow)
 	connect(ui->openProjectButton, &QPushButton::clicked, this, &MainWindow::openProject);
 }
 
-void MainWindow::changeTab(int index)
+MainWindow::~MainWindow()
 {
-	
-}
-
-void MainWindow::closeTab(int index)
-{
-	if(tabWidget->currentIndex() == index)
-	{
-		if(index < tabWidget->count()-1)
-		{
-			tabWidget->setCurrentIndex(index+1);
-		}
-		else
-		{
-			tabWidget->setCurrentIndex(index-1);
-		}
-	}
-	
-	tabWidget->removeTab(index);
+    delete ui;
 }
 
 void MainWindow::newProject()
 {
-	tabWidget->addTab(new ProjectTab(), "New project");
-	tabWidget->setCurrentIndex(tabWidget->count()-1);
+    tabWidget->addTab(new ProjectTab(), "New project");
+    tabWidget->setCurrentIndex(tabWidget->count()-1);
 }
 
 void MainWindow::openProject()
 {
-	QString filename = QFileDialog::getOpenFileName(nullptr, QObject::tr("Open project"), QDir::currentPath(), QObject::tr("GUIC projects (*.guic);;All files (*.*)"));
+    QString filename = QFileDialog::getOpenFileName(nullptr, QObject::tr("Open project"), QDir::currentPath(), QObject::tr("GUIC projects (*.guic);;All files (*.*)"));
 }
 
-MainWindow::~MainWindow()
+void MainWindow::on_tabWidget_currentChanged(int index)
 {
-	delete ui;
+
+}
+
+void MainWindow::on_tabWidget_tabCloseRequested(int index)
+{
+    if(tabWidget->currentIndex() == index)
+    {
+        if(index < tabWidget->count()-1)
+        {
+            tabWidget->setCurrentIndex(index+1);
+        }
+        else
+        {
+            tabWidget->setCurrentIndex(index-1);
+        }
+    }
+
+    tabWidget->removeTab(index);
 }
 
 void MainWindow::on_actionNew_Project_triggered()
@@ -95,3 +90,4 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     QMainWindow::closeEvent(event);
 }
+
