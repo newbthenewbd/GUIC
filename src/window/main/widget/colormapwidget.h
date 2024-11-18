@@ -26,12 +26,12 @@ class ColorMapWidget : public QWidget
 	QColor getColor(double value);
 	double getMinValue();
 	double getMaxValue();
-	QString getUnit();
+	const QString& getUnit();
 	
 	public slots:
 	void setMinValue(double value);
 	void setMaxValue(double value);
-	void setUnit(QString unit);
+	void setUnit(const QString& unit);
 	
 	protected:
 	void paintEvent(QPaintEvent* event) override;

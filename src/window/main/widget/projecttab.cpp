@@ -227,11 +227,11 @@ void ProjectTab::solve()
 	
 	float strainRadius = 20.f;
 	int minNeighbors = 5;
-	opencorr::Strain* strain;
+    opencorr::Strain* strain;
 	
-	opencorr::Image2D* refImage;
-	
-	std::vector<opencorr::POI2D> poi;
+    opencorr::Image2D* refImage;
+
+    std::vector<opencorr::POI2D> poi;
 	
 	for(int i = 0; i < ui->listWidget->count(); i++)
 	{
@@ -249,11 +249,11 @@ void ProjectTab::solve()
 		
 		if(i == 1) //oh no, really have to calculate
 		{
-			//TODO other solvers, not just FFTCC + NR
-			fftcc = new opencorr::FFTCC2D(subsetRadiusX, subsetRadiusY, omp_get_num_procs());
-			nr = new opencorr::NR2D1(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
-			strain = new opencorr::Strain(strainRadius, minNeighbors, omp_get_num_procs());
-			
+            //TODO other solvers, not just FFTCC + NR
+            fftcc = new opencorr::FFTCC2D(subsetRadiusX, subsetRadiusY, omp_get_num_procs());
+            nr = new opencorr::NR2D1(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
+            strain = new opencorr::Strain(strainRadius, minNeighbors, omp_get_num_procs());
+
 			if(data->poi.empty())
 			{
 				for(int y = 772; y < 1468; y++)
@@ -267,32 +267,32 @@ void ProjectTab::solve()
 					}
 				}
             } else poi = data->poi;
-		}
-		
-		fftcc->setImages(*refImage, *(data->image));
-		fftcc->prepare();
+        }
+
+        fftcc->setImages(*refImage, *(data->image));
+        fftcc->prepare();
         fftcc->compute(poi);
-		
-		nr->setImages(*refImage, *(data->image));
-		nr->prepare();
+
+        nr->setImages(*refImage, *(data->image));
+        nr->prepare();
         nr->compute(poi);
-		
-		strain->setApproximation(1); //Cauchy strain
+
+        strain->setApproximation(1); //Cauchy strain
         strain->prepare(poi);
         strain->compute(poi);
 
         data->poi = poi;
-	}
+    }
 	
 	ui->statusLabel->setText("Ready");
 	displayImage();
-	
-	if(ui->listWidget->count() > 1) //really calculated
-	{
-		delete strain;
-		delete nr;
-		delete fftcc;
-	}
+
+    if(ui->listWidget->count() > 1) //really had to calculate
+    {
+        delete strain;
+        delete nr;
+        delete fftcc;
+    }
 }
 
 static void drawCircle(QGraphicsScene* scene, double x, double y, double diameter, QColor color)
