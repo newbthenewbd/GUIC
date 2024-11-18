@@ -46,12 +46,12 @@ void ColorMapWidget::setMaxValue(double value)
 	maxValue = value;
 }
 
-QString ColorMapWidget::getUnit()
+const QString& ColorMapWidget::getUnit()
 {
 	return unit;
 }
 
-void ColorMapWidget::setUnit(QString unit)
+void ColorMapWidget::setUnit(const QString& unit)
 {
 	this->unit = unit;
 	update();
@@ -60,6 +60,8 @@ void ColorMapWidget::setUnit(QString unit)
 
 void ColorMapWidget::paintEvent(QPaintEvent* event)
 {
+	(void) event;
+
 	QPainter painter(this);
 	
 	painter.fillRect(0, 0, width(), height(), Qt::lightGray);

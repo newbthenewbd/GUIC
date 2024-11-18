@@ -9,9 +9,10 @@ static_assert(sizeof(qulonglong) >= sizeof(void*), "sizeof(qulonglong) isn't >= 
 
 class ImageListItemWidget : public QListWidgetItem
 {
-    using QListWidgetItem::QListWidgetItem; //constructors
+    using QListWidgetItem::QListWidgetItem; // constructors
     
     public:
+    using QListWidgetItem::setData; // shut up warning
     void setData(ImageListItemData* data)
     {
         // Yes, this is about the easiest way to just remember a pointer...
@@ -22,6 +23,7 @@ class ImageListItemWidget : public QListWidgetItem
         QListWidgetItem::setData(Qt::UserRole, QVariant((qulonglong) data));
     }
     
+    using QListWidgetItem::data; // shut up warning
     ImageListItemData* data()
     {
         return (ImageListItemData*) QListWidgetItem::data(Qt::UserRole).toULongLong();
