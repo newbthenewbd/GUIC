@@ -219,15 +219,15 @@ void ProjectTab::solve()
 
 	int subsetRadiusX = 16;
 	int subsetRadiusY = 16;
-	opencorr::FFTCC2D* fftcc;
+	opencorr::FFTCC2D* fftcc = nullptr;
 	
 	int maxIter = 10;
 	float maxDeformationNorm = 0.001f;
-	opencorr::NR2D1* nr;
+	opencorr::NR2D1* nr = nullptr;
 	
 	float strainRadius = 20.f;
 	int minNeighbors = 5;
-    opencorr::Strain* strain;
+    opencorr::Strain* strain = nullptr;
 	
     opencorr::Image2D* refImage;
 
