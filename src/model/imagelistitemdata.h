@@ -3,6 +3,7 @@
 
 #include <QPixmap>
 #include <QMetaType>
+#include <memory>
 #include <vector>
 #include <opencorr.h>
 
@@ -11,7 +12,7 @@ class ImageListItemData
 	public:
 	ImageListItemData();
 	QPixmap pixmap;
-	opencorr::Image2D* image;
+	std::unique_ptr<opencorr::Image2D> image;
 	std::vector<opencorr::POI2D> poi = {};
 };
 

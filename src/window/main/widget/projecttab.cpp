@@ -26,6 +26,7 @@
 //#include <opencv2/world.hpp>
 #define TINYCOLORMAP_WITH_QT5
 #include "ext/tinycolormap.hpp"
+#include <memory>
 #include <vector>
 
 ProjectTab::ProjectTab(QWidget* parent) :
@@ -105,9 +106,9 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 			ImageListItemData* data = new ImageListItemData();
 			item->setData(data);
 			
-			data->image = new opencorr::Image2D(path.toStdString());
+			data->image = std::make_unique<opencorr::Image2D>(path.toStdString());
 			
-			data->pixmap = QPixmap::fromImage(QImage(data->image->cv_mat.data, data->image->width, data->image->height, data->image->width, QImage::Format_Grayscale8));
+			data->pixmap = QPixmap::fromImage(QImage(data->image.get()->cv_mat.data, data->image.get()->width, data->image.get()->height, data->image.get()->width, QImage::Format_Grayscale8));
 			
 			item->setIcon(data->pixmap);
 			ui->listWidget->addItem(item);
@@ -240,7 +241,7 @@ void ProjectTab::solve()
 		
 		if(i == 0)
 		{
-			refImage = data->image;
+			refImage = data->image.get();
 			continue;
 		}
 		
@@ -269,11 +270,11 @@ void ProjectTab::solve()
             } else poi = data->poi;
         }
 
-        fftcc->setImages(*refImage, *(data->image));
+        fftcc->setImages(*refImage, *(data->image.get()));
         fftcc->prepare();
         fftcc->compute(poi);
 
-        nr->setImages(*refImage, *(data->image));
+        nr->setImages(*refImage, *(data->image.get()));
         nr->prepare();
         nr->compute(poi);
 
