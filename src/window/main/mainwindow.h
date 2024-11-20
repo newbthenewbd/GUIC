@@ -24,16 +24,17 @@ class MainWindow : public QMainWindow
 	void openProject();
     // void saveProject();
     // void closeProject();
-    // void closeWindow();
+    void closeWindow();
 
 	private slots:
     void on_tabWidget_currentChanged(int index);
-    void on_tabWidget_tabCloseRequested(int index);
+    bool on_tabWidget_tabCloseRequested(int index);
 	void on_actionOpen_Project_triggered();
 	void on_actionNew_Project_triggered();
-    void on_actionAbout_GUIC_triggered();
-
-private:
+	void on_actionAbout_GUIC_triggered();
+	void on_actionQuit_GUIC_triggered();
+    
+    private:
 	Ui::MainWindow *ui;
 };
 

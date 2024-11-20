@@ -52,7 +52,7 @@ ui(new Ui::ProjectTab)
 	
     ui->saveProjectButton->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
 	
-    ui->openImagesButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogStart));
+    ui->openImagesButton->setIcon(style()->standardIcon(QStyle::SP_DirHomeIcon));
 	
 	ui->solverButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
 	solverMenu = new QMenu();

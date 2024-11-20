@@ -48,12 +48,21 @@ void MainWindow::openProject()
     QString filename = QFileDialog::getOpenFileName(nullptr, QObject::tr("Open project"), QDir::currentPath(), QObject::tr("GUIC projects (*.guic);;All files (*.*)"));
 }
 
+void MainWindow::closeWindow()
+{
+    for(int i = tabWidget->count()-1; i >= 0; i--)
+    {
+        if(!on_tabWidget_tabCloseRequested(i)) break;
+    }
+    QApplication::quit();
+}
+
 void MainWindow::on_tabWidget_currentChanged(int index)
 {
 
 }
 
-void MainWindow::on_tabWidget_tabCloseRequested(int index)
+bool MainWindow::on_tabWidget_tabCloseRequested(int index)
 {
     if(tabWidget->currentIndex() == index)
     {
@@ -68,6 +77,7 @@ void MainWindow::on_tabWidget_tabCloseRequested(int index)
     }
 
     tabWidget->removeTab(index);
+    return true;
 }
 
 void MainWindow::on_actionNew_Project_triggered()
@@ -86,8 +96,13 @@ void MainWindow::on_actionAbout_GUIC_triggered()
 	about.exec();
 }
 
+void MainWindow::on_actionQuit_GUIC_triggered()
+{
+    closeWindow();
+}
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    QMainWindow::closeEvent(event);
+    closeWindow();
 }
 
