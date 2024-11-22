@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>692</width>
+    <width>753</width>
     <height>400</height>
    </rect>
   </property>
@@ -79,6 +79,12 @@
        </property>
        <item>
         <widget class="QFrame" name="colormapFrame">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="spacing">
            <number>0</number>
@@ -167,11 +173,6 @@
             </item>
             <item>
              <property name="text">
-              <string>Github</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
               <string>Cubehelix</string>
              </property>
             </item>
@@ -240,12 +241,43 @@
                 <string>Cauchy strain EXY</string>
                </property>
               </item>
+              <item>
+               <property name="text">
+                <string>Green strain EXX</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Green strain EYY</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Green strain EXY</string>
+               </property>
+              </item>
              </widget>
             </item>
             <item>
              <widget class="QToolButton" name="displayConfigButton">
               <property name="toolTip">
                <string>Configure...</string>
+              </property>
+              <property name="autoRaise">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="unitsButton">
+              <property name="toolTip">
+               <string>View units</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="popupMode">
+               <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
               </property>
               <property name="autoRaise">
                <bool>true</bool>
@@ -317,13 +349,13 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_9">
                 <property name="spacing">
-                 <number>0</number>
+                 <number>-1</number>
                 </property>
                 <item>
                  <widget class="QDoubleSpinBox" name="maxSpinBox">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                    <horstretch>1</horstretch>
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
                   </property>
@@ -337,19 +369,15 @@
                    <number>3</number>
                   </property>
                   <property name="minimum">
-                   <double>0.000000000000000</double>
+                   <double>-100000.000000000000000</double>
                   </property>
                   <property name="maximum">
-                   <double>0.000000000000000</double>
+                   <double>100000.000000000000000</double>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="maxUnitLabel">
-                  <property name="text">
-                   <string/>
-                  </property>
-                 </widget>
+                 <widget class="QLabel" name="maxUnitLabel"/>
                 </item>
                </layout>
               </item>
@@ -402,14 +430,11 @@
               </property>
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_10">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
                 <item>
                  <widget class="QDoubleSpinBox" name="minSpinBox">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                    <horstretch>1</horstretch>
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
                   </property>
@@ -422,17 +447,16 @@
                   <property name="decimals">
                    <number>3</number>
                   </property>
+                  <property name="minimum">
+                   <double>-100000.000000000000000</double>
+                  </property>
                   <property name="maximum">
-                   <double>0.000000000000000</double>
+                   <double>100000.000000000000000</double>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="minUnitLabel">
-                  <property name="text">
-                   <string/>
-                  </property>
-                 </widget>
+                 <widget class="QLabel" name="minUnitLabel"/>
                 </item>
                </layout>
               </item>
@@ -528,7 +552,7 @@
             <item>
              <widget class="QToolButton" name="openImagesButton">
               <property name="text">
-               <string> Load files...</string>
+               <string>Open images</string>
               </property>
               <property name="iconSize">
                <size>
@@ -537,7 +561,29 @@
                </size>
               </property>
               <property name="popupMode">
-               <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
+               <enum>QToolButton::ToolButtonPopupMode::DelayedPopup</enum>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
+              </property>
+              <property name="autoRaise">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="aoiButton">
+              <property name="text">
+               <string>Pick area of interest</string>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>48</width>
+                <height>48</height>
+               </size>
+              </property>
+              <property name="popupMode">
+               <enum>QToolButton::ToolButtonPopupMode::DelayedPopup</enum>
               </property>
               <property name="toolButtonStyle">
                <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
@@ -550,29 +596,7 @@
             <item>
              <widget class="QToolButton" name="solverButton">
               <property name="text">
-               <string>Solver: FFTCC + NR </string>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>48</width>
-                <height>48</height>
-               </size>
-              </property>
-              <property name="popupMode">
-               <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
-              </property>
-              <property name="toolButtonStyle">
-               <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
-              </property>
-              <property name="autoRaise">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="unitsButton">
-              <property name="text">
-               <string>Units: px, % </string>
+               <string>Solver: FFTCC + ICGN1 </string>
               </property>
               <property name="iconSize">
                <size>
@@ -603,7 +627,7 @@
                </size>
               </property>
               <property name="popupMode">
-               <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
+               <enum>QToolButton::ToolButtonPopupMode::DelayedPopup</enum>
               </property>
               <property name="toolButtonStyle">
                <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
@@ -630,13 +654,6 @@
           </widget>
          </item>
          <item>
-          <widget class="Line" name="line_3">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="SceneView" name="sceneView">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -645,23 +662,13 @@
             </sizepolicy>
            </property>
            <property name="frameShape">
-            <enum>QFrame::Shape::NoFrame</enum>
+            <enum>QFrame::Shape::StyledPanel</enum>
            </property>
            <property name="frameShadow">
             <enum>QFrame::Shadow::Plain</enum>
            </property>
            <property name="transformationAnchor">
             <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="Line" name="line_2">
-           <property name="frameShadow">
-            <enum>QFrame::Shadow::Raised</enum>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
            </property>
           </widget>
          </item>
@@ -715,7 +722,7 @@
               <string>%</string>
              </property>
              <property name="minimum">
-              <number>1</number>
+              <number>25</number>
              </property>
              <property name="maximum">
               <number>9999</number>
@@ -759,7 +766,10 @@
        <item>
         <widget class="ImageListWidget" name="listWidget">
          <property name="frameShape">
-          <enum>QFrame::Shape::NoFrame</enum>
+          <enum>QFrame::Shape::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
@@ -812,6 +822,9 @@
    <class>ColorPickerButton</class>
    <extends>QToolButton</extends>
    <header>colorpickerbutton.h</header>
+   <slots>
+    <signal>colorSet()</signal>
+   </slots>
   </customwidget>
   <customwidget>
    <class>SceneView</class>
@@ -941,7 +954,7 @@
   </connection>
   <connection>
    <sender>chooseColormapBox</sender>
-   <signal>currentIndexChanged(int)</signal>
+   <signal>activated(int)</signal>
    <receiver>ProjectTab</receiver>
    <slot>colormapSelected(int)</slot>
    <hints>
@@ -1019,6 +1032,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>resetMaxButton</sender>
+   <signal>released()</signal>
+   <receiver>ProjectTab</receiver>
+   <slot>resetMax()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>142</x>
+     <y>110</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>348</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>resetMinButton</sender>
+   <signal>released()</signal>
+   <receiver>ProjectTab</receiver>
+   <slot>resetMin()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>140</x>
+     <y>380</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>348</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>aboveMaxColorButton</sender>
+   <signal>colorSet()</signal>
+   <receiver>ProjectTab</receiver>
+   <slot>displayImage()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>17</x>
+     <y>136</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>348</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>belowMinColorButton</sender>
+   <signal>colorSet()</signal>
+   <receiver>ProjectTab</receiver>
+   <slot>displayImage()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>17</x>
+     <y>354</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>348</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>addImages()</slot>
@@ -1028,5 +1105,7 @@
   <slot>unitsChanged(QAction*)</slot>
   <slot>solverChanged(QAction*)</slot>
   <slot>solve()</slot>
+  <slot>resetMin()</slot>
+  <slot>resetMax()</slot>
  </slots>
 </ui>

@@ -13,9 +13,8 @@ class ImageListItemData
 	ImageListItemData();
 	QPixmap pixmap;
 	std::unique_ptr<opencorr::Image2D> image;
-	std::vector<opencorr::POI2D> poi = {};
+	std::vector<opencorr::POI2D> poi;
+	std::vector<opencorr::POI2D> greenPOI;
 };
-
-Q_DECLARE_METATYPE(ImageListItemData*)
 
 #endif // IMAGELISTITEMDATA_H

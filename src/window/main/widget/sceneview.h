@@ -14,6 +14,9 @@ class SceneView : public QGraphicsView
 	void scaledPercent(int percent);
 	
 	public:
+	QLineF ruler;
+	QVector<QPointF> points;
+	QVector<QPointF> savedPoints;
 	double getScale();
 	int getScalePercent();
 	
@@ -24,6 +27,7 @@ class SceneView : public QGraphicsView
 	
 	protected:
 	void wheelEvent(QWheelEvent* event) override;
+	void drawForeground(QPainter* painter, const QRectF& rect) override;
 };
 
 #endif // SCENEVIEW_H

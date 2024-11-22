@@ -2,6 +2,7 @@
 #include "ui_projecttab.h"
 #include <QObject>
 #include <QEvent>
+#include <QGraphicsSceneEvent>
 #include <QFileDialog>
 #include <QDir>
 #include <QFileInfo>
@@ -18,7 +19,7 @@
 #include <QComboBox>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <opencorr.h>
+#include "window/solverconfig/solverconfigwindow.h"
 #include "imagelistitemwidget.h"
 #include "model/imagelistitemdata.h"
 #include <omp.h>
@@ -26,7 +27,6 @@
 //#include <opencv2/world.hpp>
 #define TINYCOLORMAP_WITH_QT5
 #include "ext/tinycolormap.hpp"
-#include <memory>
 #include <vector>
 
 ProjectTab::ProjectTab(QWidget* parent) :
@@ -56,18 +56,40 @@ ui(new Ui::ProjectTab)
 	
 	ui->solverButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
 	solverMenu = new QMenu();
-	solverActions[SOLVER_FFTCC_NR] = new QAction("FFTCC + NR", nullptr);
+	solverActions[SOLVER_FFTCC_ICGN1] = new QAction("FFTCC + ICGN1", nullptr);
+	solverActions[SOLVER_FFTCC_ICGN2] = new QAction("FFTCC + ICGN2", nullptr);
+	solverActions[SOLVER_FFTCC_NR1] = new QAction("FFTCC + NR1", nullptr);
+	solverActions[SOLVER_CONFIGURE] = new QAction("Configure solvers...", nullptr);
+	solverActionGroup = new QActionGroup(nullptr);
+	for(int i = 0; i < SOLVER_CONFIGURE; i++)
+	{
+		solverActions[i]->setCheckable(true);
+		if(i == 0) solverActions[i]->setChecked(true);
+		solverActionGroup->addAction(solverActions[i]);
+	}
 	for(int i = 0; i < SOLVER_MAX; i++)
 	{
+		if(i == SOLVER_CONFIGURE)
+		{
+			solverMenu->addSeparator();
+		}
 		solverMenu->addAction(solverActions[i]);
 	}
 	ui->solverButton->setMenu(solverMenu);
 	
-	ui->unitsButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogListView));
+	ui->unitsButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogContentsView));
 	unitsMenu = new QMenu();
-	unitsActions[UNITS_PX_PERCENT] = new QAction("px, %", nullptr);
-	unitsActions[UNITS_MM_PERCENT] = new QAction("mm, %", nullptr);
-	unitsActions[UNITS_CALIBRATE] = new QAction("Calibrate...", nullptr);
+	unitsActions[UNITS_PX_PERCENT] = new QAction("Display units: px, %", nullptr);
+	unitsActions[UNITS_MM_PERCENT] = new QAction("Display units: mm, %", nullptr);
+	unitsActions[UNITS_CALIBRATE] = new QAction("Calibrate units...", nullptr);
+	unitsActions[UNITS_MANCALIBRATE] = new QAction("Calibrate manually... [1 px = 1 mm]", nullptr);
+	unitsActionGroup = new QActionGroup(nullptr);
+	for(int i = 0; i < UNITS_CALIBRATE; i++)
+	{
+		unitsActions[i]->setCheckable(true);
+		if(i == 0) unitsActions[i]->setChecked(true);
+		unitsActionGroup->addAction(unitsActions[i]);
+	}
 	for(int i = 0; i < UNITS_MAX; i++)
 	{
 		if(i == UNITS_CALIBRATE)
@@ -78,7 +100,22 @@ ui(new Ui::ProjectTab)
 	}
 	ui->unitsButton->setMenu(unitsMenu);
 	
+	ui->aoiButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogListView));
+	
 	ui->solveButton->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
+	
+	// Workaround UI bug wherein the label space remains at the beginning even though no unit is shown
+	ui->colormap->setUnit("units");
+	ui->colormap->setUnit("");
+	
+	// TODO add project handling
+	ui->saveProjectButton->setVisible(false);
+	
+	// TODO add display config
+	ui->displayConfigButton->setVisible(false);
+	
+	this->installEventFilter(this);
+	scene->installEventFilter(this);
 }
 
 void ProjectTab::addImages()
@@ -93,15 +130,21 @@ void ProjectTab::addImages()
 
 void ProjectTab::addImagesFromPaths(QStringList paths)
 {
+	ui->openImagesButton->setEnabled(false);
+	ui->aoiButton->setEnabled(false);
+	ui->solverButton->setEnabled(false);
+	ui->solveButton->setEnabled(false);
+	ui->unitsButton->setEnabled(false);
 	for(QStringList::iterator i = paths.begin(); i != paths.end(); i++)
 	{
 		QString path = *i;
 		QFileInfo fileInfo(*i);
 		ui->statusLabel->setText("Loading " + fileInfo.fileName() + "...");
+		qApp->processEvents(); //maintain responsiveness
 		
 		try {
 			ImageListItemWidget* item = new ImageListItemWidget();
-			item->setText(fileInfo.fileName()); //TODO check if the name is unique
+			item->setText(fileInfo.completeBaseName());
 			
 			ImageListItemData* data = new ImageListItemData();
 			item->setData(data);
@@ -111,6 +154,7 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 			data->pixmap = QPixmap::fromImage(QImage(data->image.get()->cv_mat.data, data->image.get()->width, data->image.get()->height, data->image.get()->width, QImage::Format_Grayscale8));
 			
 			item->setIcon(data->pixmap);
+			item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsEnabled);
 			ui->listWidget->addItem(item);
 			qApp->processEvents(); //maintain responsiveness
 		} catch(...) {
@@ -118,10 +162,13 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 			break;
 		}
 	}
+	ui->openImagesButton->setEnabled(true);
+	ui->aoiButton->setEnabled(true);
+	ui->solverButton->setEnabled(true);
+	ui->solveButton->setEnabled(true);
+	ui->unitsButton->setEnabled(true);
 	ui->statusLabel->setText("Ready");
 }
-
-//displayImage was here
 
 void ProjectTab::displaySelected(int displayId)
 {
@@ -134,12 +181,14 @@ void ProjectTab::displaySelected(int displayId)
 	{
 		ui->colormap->setUnit(unitsUnits[unitsAction][displayType.unit]);
 	}
+	customMin = false;
+	customMax = false;
 	displayImage();
 }
 
 void ProjectTab::colormapSelected(int colormapId)
 {
-	tinycolormap::ColormapType colormapBoxTypes[] = { //TODO refactor out... along with the whole selector
+	tinycolormap::ColormapType colormapBoxTypes[] = { // TODO refactor out... along with the whole selector
 		tinycolormap::ColormapType::Heat,
 		tinycolormap::ColormapType::Turbo,
 		tinycolormap::ColormapType::Jet,
@@ -151,7 +200,6 @@ void ProjectTab::colormapSelected(int colormapId)
 		tinycolormap::ColormapType::Plasma,
 		tinycolormap::ColormapType::Viridis,
 		tinycolormap::ColormapType::Cividis,
-		tinycolormap::ColormapType::Github,
 		tinycolormap::ColormapType::Cubehelix,
 		tinycolormap::ColormapType::HSV
 	};
@@ -163,49 +211,65 @@ void ProjectTab::colormapSelected(int colormapId)
 
 void ProjectTab::solverChanged(QAction* action)
 {
-	for(int i = 0; i < SOLVER_MAX; i++) //should always find one, if not found, do nothing at all
+	if(action == solverActions[SOLVER_CONFIGURE])
 	{
-		if(solverActions[i] == action)
+		SolverConfigWindow solverConfig(this);
+		solverConfig.exec();
+	}
+	else
+	{
+		for(int i = 0; i < SOLVER_MAX; i++) //should always find one, if not found, do nothing at all
 		{
-			ui->solverButton->setText("Solver: " + action->text() + " ");
-			solverAction = (SolverActionID) i;
-			//TODO recalculate
-			break;
+			if(solverActions[i] == action)
+			{
+				ui->solverButton->setText("Solver: " + action->text() + " ");
+				solverAction = (SolverActionID) i;
+				//TODO recalculate
+				break;
+			}
 		}
 	}
 }
 
 void ProjectTab::unitsChanged(QAction* action)
 {
-	//QCoreApplication::postEvent(ui->unitsButton, new QHoverEvent(QEvent::HoverLeave, QPointF(), QPointF())); //no bueno, doesn't unhover the button still
+	//QCoreApplication::postEvent(ui->unitsButton, new QHoverEvent(QEvent::HoverLeave, QPointF(), QPointF())); // no bueno, doesn't unhover the button still
 	
 	if(action == unitsActions[UNITS_CALIBRATE])
 	{
-		//TODO draw to calibrate
-		/*ui->statusLabel->setText("Click and drag to grab a dimension");
-		this->installEventFilter(this);*/
-		
+		ui->statusLabel->setText("Click to grab coordinate 1, or Esc to cancel");
+		ui->sceneView->setCursor(Qt::CrossCursor);
+		sceneViewMode = MODE_TWOPOINTS_POINT1;
+		ui->openImagesButton->setEnabled(false);
+		ui->aoiButton->setEnabled(false);
+		ui->solverButton->setEnabled(false);
+		ui->solveButton->setEnabled(false);
+		ui->unitsButton->setEnabled(false);
+	}
+	else if(action == unitsActions[UNITS_MANCALIBRATE])
+	{
 		bool got;
 		
-		double px = QInputDialog::getDouble(this, "Calibrate...", "Enter dimension in pixels:", pxCalibrated, 0.1, 2147483647.0, 1, &got);
+		double px = QInputDialog::getDouble(this, "Calibrate units...", "Enter dimension in pixels:", pxCalibrated, DBL_MIN, DBL_MAX, 15, &got);
 		if(!got) return;
 		
-		double mm = QInputDialog::getDouble(this, "Calibrate...", "Enter dimension in millimeters:", mmCalibrated, 0.1, 2147483647.0, 1, &got);
+		double mm = QInputDialog::getDouble(this, "Calibrate units...", "Enter dimension in millimeters:", mmCalibrated, DBL_MIN, DBL_MAX, 15, &got);
 		if(!got) return;
 		
 		pxCalibrated = px;
 		mmCalibrated = mm;
 		mmPerPxFactor = mm/px;
+		unitsActions[UNITS_MANCALIBRATE]->setText(QString("Calibrate manually... [") + QLocale().toString(pxCalibrated) + QString(" px = ") + QLocale().toString(mmCalibrated) + QString(" mm]"));
 		
 		displayImage();
 	}
 	else
 	{
-		for(int i = 0; i < UNITS_CALIBRATE; i++) //should always find one, if not found, do nothing at all
+		for(int i = 0; i < UNITS_CALIBRATE; i++) // should always find one, if not found, do nothing at all
 		{
 			if(unitsActions[i] == action)
 			{
-				ui->unitsButton->setText("Units: " + action->text() + " ");
+				//ui->unitsButton->setText("Units: " + action->text() + " ");
 				unitsAction = (UnitsActionID) i;
 				displaySelected(ui->chooseDisplayBox->currentIndex());
 				break;
@@ -217,22 +281,34 @@ void ProjectTab::unitsChanged(QAction* action)
 
 void ProjectTab::solve()
 {
-
-	int subsetRadiusX = 16;
-	int subsetRadiusY = 16;
-	opencorr::FFTCC2D* fftcc = nullptr;
+	ui->openImagesButton->setEnabled(false);
+	ui->aoiButton->setEnabled(false);
+	ui->solverButton->setEnabled(false);
+	ui->solveButton->setEnabled(false);
+	ui->unitsButton->setEnabled(false);
 	
-	int maxIter = 10;
-	float maxDeformationNorm = 0.001f;
-	opencorr::NR2D1* nr = nullptr;
+	fftccSolver = std::make_unique<opencorr::FFTCC2D>(subsetRadiusX, subsetRadiusY, omp_get_num_procs());
 	
-	float strainRadius = 20.f;
-	int minNeighbors = 5;
-    opencorr::Strain* strain = nullptr;
+	if(solverAction == SOLVER_FFTCC_NR1)
+	{
+		dicSolver = std::make_unique<opencorr::NR2D1>(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
+	}
+	else if(solverAction == SOLVER_FFTCC_ICGN1)
+	{
+		dicSolver = std::make_unique<opencorr::ICGN2D1>(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
+	}
+	else if(solverAction == SOLVER_FFTCC_ICGN2)
+	{
+		dicSolver = std::make_unique<opencorr::ICGN2D2>(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
+	}
+	
+	strainSolver = std::make_unique<opencorr::Strain>(strainRadius, minStrainNeighbors, omp_get_num_procs());
 	
     opencorr::Image2D* refImage;
 
-    std::vector<opencorr::POI2D> poi;
+    std::vector<opencorr::POI2D> firstPOI;
+    
+    std::vector<opencorr::POI2D>& prevPOI = firstPOI;
 	
 	for(int i = 0; i < ui->listWidget->count(); i++)
 	{
@@ -242,89 +318,122 @@ void ProjectTab::solve()
 		if(i == 0)
 		{
 			refImage = data->image.get();
+			for(int y = 0; y < refImage->height; y++)
+			{
+				for(int x = 0; x < refImage->width; x++)
+				{
+					// Assumption: image got created at 0, 0
+					if(x % uniformPOIDistance == uniformPOIDistance/2 && y % uniformPOIDistance == uniformPOIDistance/2 && sceneViewPolygon.containsPoint(QPointF(x, y), Qt::OddEvenFill))
+					{
+						firstPOI.push_back(opencorr::POI2D(x, y));
+					}
+				}
+			}
 			continue;
 		}
 		
 		ui->statusLabel->setText("Processing " + item->text() + "...");
-		qApp->processEvents(); //maintain responsiveness
+		qApp->processEvents(); // maintain responsiveness
+        
+        data->poi = prevPOI; // copy
+
+        fftccSolver->setImages(*refImage, *(data->image.get()));
+        fftccSolver->prepare();
+        fftccSolver->compute(data->poi);
+
+        dicSolver->setImages(*refImage, *(data->image.get()));
+        dicSolver->prepare();
+        dicSolver->compute(data->poi);
+        
+        // TODO this is terrible, but calculating strain live is less accurate for some reason...
+        strainSolver->setApproximation(2);
+        strainSolver->prepare(data->poi);
+        strainSolver->compute(data->poi);
+        data->greenPOI = data->poi;
+        
+        strainSolver->setApproximation(1);
+        strainSolver->prepare(data->poi);
+        strainSolver->compute(data->poi);
 		
-		if(i == 1) //oh no, really have to calculate
-		{
-            //TODO other solvers, not just FFTCC + NR
-            fftcc = new opencorr::FFTCC2D(subsetRadiusX, subsetRadiusY, omp_get_num_procs());
-            nr = new opencorr::NR2D1(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
-            strain = new opencorr::Strain(strainRadius, minNeighbors, omp_get_num_procs());
-
-			if(data->poi.empty())
-			{
-				for(int y = 772; y < 1468; y++)
-				{
-					for(int x = 341; x < 511; x++)
-					{
-						if(x % 8 == 0 && y % 8 == 0)
-						{
-                            poi.push_back(opencorr::POI2D(x, y));
-						}
-					}
-				}
-            } else poi = data->poi;
-        }
-
-        fftcc->setImages(*refImage, *(data->image.get()));
-        fftcc->prepare();
-        fftcc->compute(poi);
-
-        nr->setImages(*refImage, *(data->image.get()));
-        nr->prepare();
-        nr->compute(poi);
-
-        strain->setApproximation(1); //Cauchy strain
-        strain->prepare(poi);
-        strain->compute(poi);
-
-        data->poi = poi;
+		prevPOI = data->poi; // reference
     }
 	
 	ui->statusLabel->setText("Ready");
 	displayImage();
-
-    if(ui->listWidget->count() > 1) //really had to calculate
-    {
-        delete strain;
-        delete nr;
-        delete fftcc;
-    }
+	ui->openImagesButton->setEnabled(true);
+	ui->aoiButton->setEnabled(true);
+	ui->solverButton->setEnabled(true);
+	ui->solveButton->setEnabled(true);
+	ui->unitsButton->setEnabled(true);
 }
 
-static void drawCircle(QGraphicsScene* scene, double x, double y, double diameter, QColor color)
+static void drawPoint(QGraphicsScene* scene, double x, double y, QColor color)
 {
-	QGraphicsEllipseItem* ei = new QGraphicsEllipseItem(x, y, diameter, diameter);
-	ei->setPen(color);
-	ei->setBrush(color);
-	scene->addItem(ei);
+	QPen pen = QPen(QBrush(color), 8.0);
+	pen.setCosmetic(true);
+	
+	QGraphicsLineItem* circle = new QGraphicsLineItem(x-0.0001, y, x+0.0001, y); // have to move the point at least a little for it to appear
+	circle->setPen(pen);
+	scene->addItem(circle);
 }
 
 static void drawArrow(QGraphicsScene* scene, double fromX, double fromY, double toX, double toY, QColor color)
 {
-	QGraphicsLineItem* li = new QGraphicsLineItem(fromX, fromY, toX, toY);
-	li->setPen(QPen(QBrush(color), 1.0));
-	scene->addItem(li);
-	drawCircle(scene, toX-0.75, toY-0.75, 1.5, color);
+	if(toX == fromX && toY == fromY)
+	{
+		drawPoint(scene, fromX, fromY, color);
+		return;
+	}
+	
+	QBrush brush = QBrush(color);
+	QPen pen = QPen(brush, 4.0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+	pen.setCosmetic(true);
+	
+	QLineF vector = QLineF(toX, toY, fromX, fromY); // inverted...
+	
+	QPolygonF arrowhead;
+	arrowhead << QPointF(toX, toY);
+	
+	QLineF wing = vector.unitVector(); // ...so that this starts at the end
+	
+	QGraphicsLineItem* line = new QGraphicsLineItem(fromX, fromY, wing.x2(), wing.y2());
+	line->setPen(pen);
+	scene->addItem(line);
+	
+	wing.setLength(1.154700538); // 1/cos(30deg)
+	wing.setAngle(wing.angle() - 30.0);
+	arrowhead << QPointF(wing.x2(), wing.y2());
+	wing.setAngle(wing.angle() + 60.0);
+	arrowhead << QPointF(wing.x2(), wing.y2());
+	
+	arrowhead << QPointF(toX, toY);
+	
+	QGraphicsPolygonItem* polygon = new QGraphicsPolygonItem(arrowhead);
+	polygon->setBrush(brush);
+	polygon->setPen(pen);
+	scene->addItem(polygon);
+	
+	// drawCircle(scene, toX-0.75, toY-0.75, 1.5, color);
 }
 
 void ProjectTab::displayImage()
 {
+	scene->clear();
+	
 	ImageListItemWidget* item = (ImageListItemWidget*) ui->listWidget->currentItem();
-	if(item == NULL) return;
+	if(!item)
+	{
+		scene->setSceneRect(0, 0, 0, 0);
+		ui->sceneView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+		return;
+	}
 	
 	ImageListItemData* data = item->data(); 
 	
-	scene->clear();
 	QGraphicsPixmapItem* pi = new QGraphicsPixmapItem(data->pixmap);
 	scene->addItem(pi);
 	
-	float minDisplacement = FLT_MAX, maxDisplacement = FLT_MIN;
-	float minStrain = FLT_MAX, maxStrain = FLT_MIN;
+	float minValue = FLT_MAX, maxValue = -FLT_MAX;
 	
 	for(opencorr::POI2D& i : data->poi) //only for minima and maxima
 	{
@@ -334,37 +443,62 @@ void ProjectTab::displayImage()
 			float displacementY = displayType.subUnit != 0 ? i.deformation.v : 0.0f;
 			float displacement = sqrtf(powf(displacementX, 2) + powf(displacementY, 2));
 			
-			if(displacement < minDisplacement) minDisplacement = displacement;
-			if(displacement > maxDisplacement) maxDisplacement = displacement;
+			if(displacement < minValue) minValue = displacement;
+			if(displacement > maxValue) maxValue = displacement;
 		}
-		else if(displayType.unit == UNIT_TYPE_STRAIN)
+		else if(displayType.unit == UNIT_TYPE_CAUCHY_STRAIN)
 		{
+			
 			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
 			
-			if(strain < minStrain) minStrain = strain;
-			if(strain > maxStrain) maxStrain = strain;
-		}
+			if(strain < minValue) minValue = strain;
+			if(strain > maxValue) maxValue = strain;
+		} else break;
 	}
 	
-	if(displayType.unit == UNIT_TYPE_DEFORMATION && minDisplacement != FLT_MAX)
+	// TODO this is terrible, but calculating strain live is less accurate for some reason...
+	for(opencorr::POI2D& i : data->greenPOI)
 	{
-		ui->colormap->setMinValue(minDisplacement);
-		ui->colormap->setMaxValue(maxDisplacement);
+		if(displayType.unit == UNIT_TYPE_GREEN_STRAIN)
+		{
+			
+			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
+			
+			if(strain < minValue) minValue = strain;
+			if(strain > maxValue) maxValue = strain;
+		} else break;
 	}
-	else if(displayType.unit == UNIT_TYPE_STRAIN && minStrain != FLT_MAX)
+	
+	if(minValue != FLT_MAX)
 	{
-		ui->colormap->setMinValue(minStrain);
-		ui->colormap->setMaxValue(maxStrain);
+		double factor = (displayType.unit == UNIT_TYPE_DEFORMATION && unitsAction == UNITS_MM_PERCENT) ? mmPerPxFactor : 1.0;
+		if(customMin)
+		{
+			minValue = ui->minSpinBox->value() / factor;
+		}
+		else
+		{
+			ui->minSpinBox->blockSignals(true);
+			ui->minSpinBox->setValue(minValue * factor);
+			ui->minSpinBox->blockSignals(false);
+		}
+		if(customMax)
+		{
+			maxValue = ui->maxSpinBox->value() / factor;
+		}
+		else
+		{
+			ui->maxSpinBox->blockSignals(true);
+			ui->maxSpinBox->setValue(maxValue * factor);
+			ui->maxSpinBox->blockSignals(false);
+		}
+		ui->colormap->setMinValue(ui->minSpinBox->value());
+		ui->colormap->setMaxValue(ui->maxSpinBox->value());
 	}
 	else
 	{
 		ui->colormap->setMinValue(0.0);
 		ui->colormap->setMaxValue(0.0);
-	}
-	if(displayType.unit == UNIT_TYPE_DEFORMATION && unitsAction == UNITS_MM_PERCENT)
-	{
-		ui->colormap->setMinValue(ui->colormap->getMinValue() * mmPerPxFactor);
-		ui->colormap->setMaxValue(ui->colormap->getMaxValue() * mmPerPxFactor);
 	}
 	ui->colormap->update();
 	
@@ -377,34 +511,222 @@ void ProjectTab::displayImage()
 			float displacementY = displayType.subUnit != 0 ? i.deformation.v : 0.0f;
 			float displacement = sqrtf(powf(displacementX, 2) + powf(displacementY, 2));
 			
-			QColor color = ui->colormap->getColor((displacement - minDisplacement) / (maxDisplacement - minDisplacement));
+			QColor color;
+			
+			if((displacement - minValue) / (maxValue - minValue) > 1.0)
+			{
+				color = ui->aboveMaxColorButton->getColor();
+			}
+			else if((displacement - minValue) / (maxValue - minValue) < 0.0)
+			{
+				color = ui->belowMinColorButton->getColor();
+			}
+			else
+			{
+				color = ui->colormap->getColor((displacement - minValue) / (maxValue - minValue));
+			}
 			
 			drawArrow(scene, i.x, i.y, i.x + displacementX, i.y + displacementY, color);
 		}
-		else if(displayType.unit == UNIT_TYPE_STRAIN)
+		else if(displayType.unit == UNIT_TYPE_CAUCHY_STRAIN)
 		{
             float displacementX = i.deformation.u;
             float displacementY = i.deformation.v;
 			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
 			
-			QColor color = ui->colormap->getColor((strain - minStrain) / (maxStrain - minStrain));
+			QColor color;
 			
-            drawCircle(scene, i.x + displacementX, i.y + displacementY, 8.0, color);
-		}
+			if((strain - minValue) / (maxValue - minValue) > 1.0)
+			{
+				color = ui->aboveMaxColorButton->getColor();
+			}
+			else if((strain - minValue) / (maxValue - minValue) < 0.0)
+			{
+				color = ui->belowMinColorButton->getColor();
+			}
+			else
+			{
+				color = ui->colormap->getColor((strain - minValue) / (maxValue - minValue));
+			}
+			
+            drawPoint(scene, i.x + displacementX, i.y + displacementY, color);
+		} else break;
+	}
+	
+	// TODO this is terrible, but calculating strain live is less accurate for some reason...
+	for(opencorr::POI2D& i : data->greenPOI)
+	{
+		if(displayType.unit == UNIT_TYPE_GREEN_STRAIN)
+		{
+			float displacementX = i.deformation.u;
+			float displacementY = i.deformation.v;
+			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
+			
+			QColor color;
+			
+			if((strain - minValue) / (maxValue - minValue) > 1.0)
+			{
+				color = ui->aboveMaxColorButton->getColor();
+			}
+			else if((strain - minValue) / (maxValue - minValue) < 0.0)
+			{
+				color = ui->belowMinColorButton->getColor();
+			}
+			else
+			{
+				color = ui->colormap->getColor((strain - minValue) / (maxValue - minValue));
+			}
+			
+			drawPoint(scene, i.x + displacementX, i.y + displacementY, color);
+		} else break;
 	}
 }
 
-
 bool ProjectTab::eventFilter(QObject* object, QEvent* event)
 {
-	//TODO type of filter discrimintor, when needed...
-	if(event->type() == QEvent::KeyPress || event->type() == QEvent::MouseButtonPress)
+	if(object == scene)
 	{
-		this->removeEventFilter(this);
-		object->removeEventFilter(this);
-		if(object != ui->sceneView)
+		if(event->type() == QEvent::GraphicsSceneMousePress && sceneViewMode == MODE_TWOPOINTS_POINT1)
 		{
+			sceneViewPoint1 = ((QGraphicsSceneMouseEvent*) event)->scenePos();
+			ui->statusLabel->setText("Click to grab coordinate 2, or Esc to cancel");
+			sceneViewMode = MODE_TWOPOINTS_POINT2;
+			return true;
+		}
+		else if(sceneViewMode == MODE_TWOPOINTS_POINT2)
+		{
+			if(event->type() == QEvent::GraphicsSceneMouseMove)
+			{
+				QPointF pos = ((QGraphicsSceneMouseEvent*) event)->scenePos();
+				ui->sceneView->ruler = QLineF(sceneViewPoint1.x(), sceneViewPoint1.y(), pos.x(), pos.y());
+				scene->update();
+			}
+			else if(event->type() == QEvent::GraphicsSceneMousePress)
+			{
+				sceneViewPoint2 = ((QGraphicsSceneMouseEvent*) event)->scenePos();
+				double x1 = sceneViewPoint1.x();
+				double x2 = sceneViewPoint2.x();
+				double y1 = sceneViewPoint1.y();
+				double y2 = sceneViewPoint2.y();
+				double px = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+				bool got;
+				double mm = QInputDialog::getDouble(this, "Calibrate units...", QString("Selected ") + QLocale().toString(px) + QString(" px. Enter dimension in millimeters:"), mmCalibrated, DBL_MIN, DBL_MAX, 15, &got);
+				if(got)
+				{
+					pxCalibrated = px;
+					mmCalibrated = mm;
+					mmPerPxFactor = mmCalibrated/pxCalibrated;
+					unitsActions[UNITS_MANCALIBRATE]->setText(QString("Calibrate manually... [") + QLocale().toString(pxCalibrated) + QString(" px = ") + QLocale().toString(mmCalibrated) + QString(" mm]"));
+					displayImage();
+				}
+				ui->statusLabel->setText("Ready");
+				ui->sceneView->setCursor(Qt::ArrowCursor);
+				sceneViewMode = MODE_NORMAL;
+				ui->openImagesButton->setEnabled(true);
+				ui->aoiButton->setEnabled(true);
+				ui->solverButton->setEnabled(true);
+				ui->solveButton->setEnabled(true);
+				ui->unitsButton->setEnabled(true);
+				ui->sceneView->ruler = QLineF();
+				scene->update();
+				return true;
+			}
+		}
+		else if(sceneViewMode == MODE_POLYGON)
+		{
+			if(event->type() == QEvent::GraphicsSceneMouseMove)
+			{
+				if(ui->sceneView->points.count() > 1)
+				{
+					QPointF pos = ((QGraphicsSceneMouseEvent*) event)->scenePos();
+					ui->sceneView->points[ui->sceneView->points.count()-1] = pos;
+					scene->update();
+				}
+			}
+			else if(event->type() == QEvent::GraphicsSceneMousePress && ((QGraphicsSceneMouseEvent*) event)->button() == Qt::RightButton)
+			{
+				if(ui->sceneView->points.count() > 1)
+				{
+					ui->sceneView->points.pop_back();
+					// Remove both points if just one remains
+					if(ui->sceneView->points.count() == 1)
+					{
+						ui->sceneView->points.pop_back();
+					}
+					else // move the last point to the mouse
+					{
+						QPointF pos = ((QGraphicsSceneMouseEvent*) event)->scenePos();
+						ui->sceneView->points[ui->sceneView->points.count()-1] = pos;
+					}
+					scene->update();
+				}
+				return true;
+			}
+			else if(event->type() == QEvent::GraphicsSceneMousePress && ((QGraphicsSceneMouseEvent*) event)->button() == Qt::LeftButton)
+			{
+				QPointF pos = ((QGraphicsSceneMouseEvent*) event)->scenePos();
+				// Append first point twice
+				// The second point will move with the mouse
+				// Then when it is clicked, another is appended
+				// And then that one will move with the mouse
+				if(ui->sceneView->points.count() == 0)
+				{
+					ui->sceneView->points.append(pos);
+				}
+				ui->sceneView->points.append(pos);
+				scene->update();
+				return true;
+			}
+		}
+	}
+	else if(event->type() == QEvent::KeyRelease)
+	{
+		int key = ((QKeyEvent*) event)->key();
+		if(key == Qt::Key_Escape && sceneViewMode != MODE_NORMAL)
+		{
+			if(sceneViewMode == MODE_POLYGON)
+			{
+				ui->sceneView->points = ui->sceneView->savedPoints;
+			}
+			else
+			{
+				ui->sceneView->ruler = QLineF();
+			}
 			ui->statusLabel->setText("Ready");
+			ui->sceneView->setCursor(Qt::ArrowCursor);
+			sceneViewMode = MODE_NORMAL;
+			ui->openImagesButton->setEnabled(true);
+			ui->aoiButton->setEnabled(true);
+			ui->solverButton->setEnabled(true);
+			ui->solveButton->setEnabled(true);
+			ui->unitsButton->setEnabled(true);
+			scene->update();
+			return true;
+		}
+		else if(key == Qt::Key_Return && sceneViewMode == MODE_POLYGON)
+		{
+			// Remove the dynamic point
+			if(ui->sceneView->points.count() > 0)
+			{
+				ui->sceneView->points.pop_back();
+			}
+			// Connect the last point
+			if(ui->sceneView->points.count() > 2)
+			{
+				ui->sceneView->points.append(ui->sceneView->points[0]);
+			}
+			
+			ui->sceneView->savedPoints = ui->sceneView->points;
+			sceneViewPolygon = QPolygonF(ui->sceneView->points);
+			scene->update();
+			ui->statusLabel->setText("Ready");
+			ui->sceneView->setCursor(Qt::ArrowCursor);
+			sceneViewMode = MODE_NORMAL;
+			ui->openImagesButton->setEnabled(true);
+			ui->aoiButton->setEnabled(true);
+			ui->solverButton->setEnabled(true);
+			ui->solveButton->setEnabled(true);
+			ui->unitsButton->setEnabled(true);
 			return true;
 		}
 	}
@@ -415,12 +737,14 @@ ProjectTab::~ProjectTab()
 {
 	delete ui;
 	
+	delete solverActionGroup;
 	delete solverMenu;
 	for(int i = 0; i < SOLVER_MAX; i++)
 	{
 		delete solverActions[i];
 	}
 	
+	delete unitsActionGroup;
 	delete unitsMenu;
 	for(int i = 0; i < UNITS_MAX; i++)
 	{
@@ -428,4 +752,42 @@ ProjectTab::~ProjectTab()
 	}
 	
 	delete scene;
+}
+
+void ProjectTab::on_maxSpinBox_valueChanged(double value)
+{
+	customMax = true;
+	displayImage();
+}
+
+void ProjectTab::on_minSpinBox_valueChanged(double value)
+{
+	customMin = true;
+	displayImage();
+}
+
+void ProjectTab::resetMax()
+{
+	customMax = false;
+	displayImage();
+}
+
+void ProjectTab::resetMin()
+{
+	customMin = false;
+	displayImage();
+}
+
+void ProjectTab::on_aoiButton_released()
+{
+	ui->statusLabel->setText("Left click to add a polygon point, right click to remove the last point, Enter to confirm area, or Esc to cancel");
+	ui->sceneView->setCursor(Qt::CrossCursor);
+	sceneViewMode = MODE_POLYGON;
+	ui->openImagesButton->setEnabled(false);
+	ui->aoiButton->setEnabled(false);
+	ui->solverButton->setEnabled(false);
+	ui->solveButton->setEnabled(false);
+	ui->unitsButton->setEnabled(false);
+	ui->sceneView->points.clear();
+	scene->update();
 }
