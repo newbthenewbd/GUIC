@@ -178,16 +178,35 @@ void ProjectTab::addImagesFromPaths(QStringList paths)
 void ProjectTab::displaySelected(int displayId)
 {
 	displayType = displayTypes[displayId];
+	
+	if(displayType.unit == UNIT_TYPE_MAX && displayType.subUnit != 0)
+	{
+		ui->minSpinBox->setDecimals(7);
+		ui->maxSpinBox->setDecimals(7);
+		ui->colormap->setDecimals(7);
+	}
+	else if(ui->minSpinBox->decimals() != 3)
+	{
+		ui->minSpinBox->setDecimals(3);
+		ui->maxSpinBox->setDecimals(3);
+		ui->colormap->setDecimals(3);
+	}
+	
 	if(displayType.unit == UNIT_TYPE_MAX)
 	{
+		if(ui->colormap->getUnit() != "" || displayType.subUnit == 0)
+		{
+			customMin = false;
+			customMax = false;
+		}
 		ui->colormap->setUnit("");
 	}
 	else
 	{
 		ui->colormap->setUnit(unitsUnits[unitsAction][displayType.unit]);
+		customMin = false;
+		customMax = false;
 	}
-	customMin = false;
-	customMax = false;
 	displayImage();
 }
 
@@ -352,11 +371,6 @@ void ProjectTab::solve()
         dicSolver->prepare();
         dicSolver->compute(data->poi);
         
-        // TODO this is terrible, but calculating strain live is less accurate for some reason...
-        strainSolver->setApproximation(2);
-        strainSolver->prepare(data->poi);
-        strainSolver->compute(data->poi);
-        
         for(const opencorr::POI2D& i : data->poi)
         {
             if(i.result.convergence >= maxDeformationNorm && !notAchieved)
@@ -365,26 +379,23 @@ void ProjectTab::solve()
             }
         }
         
+        // TODO this is terrible, but calculating strain live is less accurate for some reason...
+        strainSolver->setApproximation(2);
+        strainSolver->prepare(data->poi);
+        strainSolver->compute(data->poi);
+        
         data->greenPOI = data->poi;
         
         strainSolver->setApproximation(1);
         strainSolver->prepare(data->poi);
         strainSolver->compute(data->poi);
 		
-		for(const opencorr::POI2D& i : data->poi)
-        {
-            if(i.result.convergence >= maxDeformationNorm && !notAchieved)
-            {
-                notAchieved = true;
-            }
-        }
-		
 		prevPOI = data->poi; // reference
     }
     
     if(notAchieved)
     {
-        QMessageBox::warning(nullptr, "Warning", QString("Convergence of ") + QLocale().toString(maxDeformationNorm) + QString(" not achieved after ") + QString::number(maxIter) + QString(" iterations"));
+        QMessageBox::warning(nullptr, "Warning", QString("Convergence of ") + QLocale().toString(maxDeformationNorm) + QString(" not achieved at some points after ") + QString::number(maxIter) + QString(" iterations"));
     }
 	
 	ui->statusLabel->setText("Ready");
@@ -477,12 +488,23 @@ void ProjectTab::displayImage()
 		}
 		else if(displayType.unit == UNIT_TYPE_CAUCHY_STRAIN)
 		{
-			
 			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
 			
 			if(strain < minValue) minValue = strain;
 			if(strain > maxValue) maxValue = strain;
-		} else break;
+		}
+		else if(displayType.unit == UNIT_TYPE_MAX)
+		{
+			if(displayType.subUnit == 1 || displayType.subUnit == 2)
+			{
+				float convergence = i.result.convergence;
+				
+				if(convergence < minValue) minValue = convergence;
+				if(convergence > maxValue) maxValue = convergence;
+			}
+			else break;
+		}
+		else break;
 	}
 	
 	// TODO this is terrible, but calculating strain live is less accurate for some reason...
@@ -495,7 +517,8 @@ void ProjectTab::displayImage()
 			
 			if(strain < minValue) minValue = strain;
 			if(strain > maxValue) maxValue = strain;
-		} else break;
+		}
+		else break;
 	}
 	
 	if(minValue != FLT_MAX)
@@ -580,7 +603,43 @@ void ProjectTab::displayImage()
 			}
 			
             drawPoint(scene, i.x + displacementX, i.y + displacementY, color);
-		} else break;
+		}
+		else if(displayType.unit == UNIT_TYPE_MAX)
+		{
+			float displacementX;
+            float displacementY;
+            if(displayType.subUnit == 1)
+            {
+                displacementX = 0.0f;
+                displacementY = 0.0f;
+            }
+            else if(displayType.subUnit == 2)
+            {
+                displacementX = i.deformation.u;
+                displacementY = i.deformation.v;
+            }
+            else break;
+            
+			float convergence = i.result.convergence;
+			
+			QColor color;
+			
+			if((convergence - minValue) / (maxValue - minValue) > 1.0)
+			{
+				color = ui->aboveMaxColorButton->getColor();
+			}
+			else if((convergence - minValue) / (maxValue - minValue) < 0.0)
+			{
+				color = ui->belowMinColorButton->getColor();
+			}
+			else
+			{
+				color = ui->colormap->getColor((convergence - minValue) / (maxValue - minValue));
+			}
+			
+            drawPoint(scene, i.x + displacementX, i.y + displacementY, color);
+		}
+		else break;
 	}
 	
 	// TODO this is terrible, but calculating strain live is less accurate for some reason...

@@ -16,6 +16,7 @@ class ColorMapWidget : public QWidget
 	QLinearGradient gradient;
 	tinycolormap::ColormapType colormapType = tinycolormap::ColormapType::Heat;
 	double minValue = 0.0, maxValue = 0.0;
+	int decimals = 3;
 	QString unit;
 	
 	signals:
@@ -24,11 +25,13 @@ class ColorMapWidget : public QWidget
 	public:
 	void setColormap(tinycolormap::ColormapType type);
 	QColor getColor(double value);
+	int getDecimals();
 	double getMinValue();
 	double getMaxValue();
 	const QString& getUnit();
 	
 	public slots:
+	void setDecimals(int decimals);
 	void setMinValue(double value);
 	void setMaxValue(double value);
 	void setUnit(const QString& unit);

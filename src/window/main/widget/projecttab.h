@@ -91,8 +91,10 @@ class ProjectTab : public QWidget
 	QPointF sceneViewPoint1, sceneViewPoint2;
 	QPolygonF sceneViewPolygon;
 	double pxCalibrated = 1.0, mmCalibrated = 1.0, mmPerPxFactor = 1.0;
-	std::vector<DisplayType> displayTypes = { //TODO make global, editable
-		(DisplayType) {UNIT_TYPE_MAX, 0}, //null
+	std::vector<DisplayType> displayTypes = { // TODO make global, editable
+		(DisplayType) {UNIT_TYPE_MAX, 0}, // null
+		(DisplayType) {UNIT_TYPE_MAX, 1}, // Convergence (at origin)
+		(DisplayType) {UNIT_TYPE_MAX, 2}, // Convergence (deformed)
 		(DisplayType) {UNIT_TYPE_DEFORMATION, 0},
 		(DisplayType) {UNIT_TYPE_DEFORMATION, 1},
 		(DisplayType) {UNIT_TYPE_DEFORMATION, 2},
