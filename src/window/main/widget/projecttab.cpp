@@ -35,6 +35,11 @@ ui(new Ui::ProjectTab)
 {
 	ui->setupUi(this);
 	
+	// Makes rendering EVEN SLOWER!
+	/*QOpenGLWidget* glWidget = new QOpenGLWidget();
+	ui->sceneView->setViewport(glWidget);
+	ui->sceneView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);*/
+	
 	scene = new QGraphicsScene();
 	ui->sceneView->setScene(scene);
 	
@@ -310,6 +315,8 @@ void ProjectTab::solve()
     
     std::vector<opencorr::POI2D>& prevPOI = firstPOI;
 	
+	bool notAchieved = false;
+	
 	for(int i = 0; i < ui->listWidget->count(); i++)
 	{
 		ImageListItemWidget* item = (ImageListItemWidget*) ui->listWidget->item(i);
@@ -349,13 +356,35 @@ void ProjectTab::solve()
         strainSolver->setApproximation(2);
         strainSolver->prepare(data->poi);
         strainSolver->compute(data->poi);
+        
+        for(const opencorr::POI2D& i : data->poi)
+        {
+            if(i.result.convergence >= maxDeformationNorm && !notAchieved)
+            {
+                notAchieved = true;
+            }
+        }
+        
         data->greenPOI = data->poi;
         
         strainSolver->setApproximation(1);
         strainSolver->prepare(data->poi);
         strainSolver->compute(data->poi);
 		
+		for(const opencorr::POI2D& i : data->poi)
+        {
+            if(i.result.convergence >= maxDeformationNorm && !notAchieved)
+            {
+                notAchieved = true;
+            }
+        }
+		
 		prevPOI = data->poi; // reference
+    }
+    
+    if(notAchieved)
+    {
+        QMessageBox::warning(nullptr, "Warning", QString("Convergence of ") + QLocale().toString(maxDeformationNorm) + QString(" not achieved after ") + QString::number(maxIter) + QString(" iterations"));
     }
 	
 	ui->statusLabel->setText("Ready");
@@ -505,6 +534,7 @@ void ProjectTab::displayImage()
 	
 	for(opencorr::POI2D& i : data->poi)
 	{
+		if(i.result.zncc <= 0) continue;
 		if(displayType.unit == UNIT_TYPE_DEFORMATION)
 		{
 			float displacementX = displayType.subUnit != 1 ? i.deformation.u : 0.0f;
@@ -556,6 +586,7 @@ void ProjectTab::displayImage()
 	// TODO this is terrible, but calculating strain live is less accurate for some reason...
 	for(opencorr::POI2D& i : data->greenPOI)
 	{
+		if(i.result.zncc <= 0) continue;
 		if(displayType.unit == UNIT_TYPE_GREEN_STRAIN)
 		{
 			float displacementX = i.deformation.u;
