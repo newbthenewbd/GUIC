@@ -407,21 +407,22 @@ void ProjectTab::solve()
 	ui->unitsButton->setEnabled(true);
 }
 
-static void drawPoint(QGraphicsScene* scene, double x, double y, QColor color)
+static void drawPoint(QGraphicsScene* scene, double x, double y, QColor color, QString tooltip)
 {
 	QPen pen = QPen(QBrush(color), 8.0);
 	pen.setCosmetic(true);
 	
 	QGraphicsLineItem* circle = new QGraphicsLineItem(x-0.0001, y, x+0.0001, y); // have to move the point at least a little for it to appear
 	circle->setPen(pen);
+	if(!tooltip.isEmpty()) circle->setToolTip(tooltip);
 	scene->addItem(circle);
 }
 
-static void drawArrow(QGraphicsScene* scene, double fromX, double fromY, double toX, double toY, QColor color)
+static void drawArrow(QGraphicsScene* scene, double fromX, double fromY, double toX, double toY, QColor color, QString tooltip)
 {
 	if(toX == fromX && toY == fromY)
 	{
-		drawPoint(scene, fromX, fromY, color);
+		drawPoint(scene, fromX, fromY, color, tooltip);
 		return;
 	}
 	
@@ -438,6 +439,7 @@ static void drawArrow(QGraphicsScene* scene, double fromX, double fromY, double 
 	
 	QGraphicsLineItem* line = new QGraphicsLineItem(fromX, fromY, wing.x2(), wing.y2());
 	line->setPen(pen);
+	if(!tooltip.isEmpty()) line->setToolTip(tooltip);
 	scene->addItem(line);
 	
 	wing.setLength(1.154700538); // 1/cos(30deg)
@@ -451,6 +453,7 @@ static void drawArrow(QGraphicsScene* scene, double fromX, double fromY, double 
 	QGraphicsPolygonItem* polygon = new QGraphicsPolygonItem(arrowhead);
 	polygon->setBrush(brush);
 	polygon->setPen(pen);
+	if(!tooltip.isEmpty()) polygon->setToolTip(tooltip);
 	scene->addItem(polygon);
 	
 	// drawCircle(scene, toX-0.75, toY-0.75, 1.5, color);
@@ -521,9 +524,10 @@ void ProjectTab::displayImage()
 		else break;
 	}
 	
+	double factor = (displayType.unit == UNIT_TYPE_DEFORMATION && unitsAction == UNITS_MM_PERCENT) ? mmPerPxFactor : 1.0;
+	
 	if(minValue != FLT_MAX)
 	{
-		double factor = (displayType.unit == UNIT_TYPE_DEFORMATION && unitsAction == UNITS_MM_PERCENT) ? mmPerPxFactor : 1.0;
 		if(customMin)
 		{
 			minValue = ui->minSpinBox->value() / factor;
@@ -579,7 +583,7 @@ void ProjectTab::displayImage()
 				color = ui->colormap->getColor((displacement - minValue) / (maxValue - minValue));
 			}
 			
-			drawArrow(scene, i.x, i.y, i.x + displacementX, i.y + displacementY, color);
+			drawArrow(scene, i.x, i.y, i.x + displacementX, i.y + displacementY, color, QLocale().toString(displacement * factor) + QString(" ") + ui->colormap->getUnit());
 		}
 		else if(displayType.unit == UNIT_TYPE_CAUCHY_STRAIN)
 		{
@@ -602,7 +606,7 @@ void ProjectTab::displayImage()
 				color = ui->colormap->getColor((strain - minValue) / (maxValue - minValue));
 			}
 			
-            drawPoint(scene, i.x + displacementX, i.y + displacementY, color);
+            drawPoint(scene, i.x + displacementX, i.y + displacementY, color, QLocale().toString(strain) + "%");
 		}
 		else if(displayType.unit == UNIT_TYPE_MAX)
 		{
@@ -637,7 +641,7 @@ void ProjectTab::displayImage()
 				color = ui->colormap->getColor((convergence - minValue) / (maxValue - minValue));
 			}
 			
-            drawPoint(scene, i.x + displacementX, i.y + displacementY, color);
+            drawPoint(scene, i.x + displacementX, i.y + displacementY, color, QLocale().toString(convergence));
 		}
 		else break;
 	}
@@ -667,7 +671,7 @@ void ProjectTab::displayImage()
 				color = ui->colormap->getColor((strain - minValue) / (maxValue - minValue));
 			}
 			
-			drawPoint(scene, i.x + displacementX, i.y + displacementY, color);
+			drawPoint(scene, i.x + displacementX, i.y + displacementY, color, QLocale().toString(strain) + "%");
 		} else break;
 	}
 }

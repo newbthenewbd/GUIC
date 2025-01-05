@@ -147,7 +147,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="maxIter"/>
+          <widget class="QSpinBox" name="maxIter">
+           <property name="maximum">
+            <number>100000</number>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLabel" name="label_6">
