@@ -68,13 +68,13 @@ class ProjectTab : public QWidget
 	~ProjectTab();
 	
 	// Solver config
-	int subsetRadiusX = 20;
-	int subsetRadiusY = 20;
+	int subsetRadiusX = 16;
+	int subsetRadiusY = 16;
 	int maxIter = 16;
 	float maxDeformationNorm = 0.001f;
 	float strainRadius = 20.f;
-	int minStrainNeighbors = 4;
-	unsigned uniformPOIDistance = 16;
+	int minStrainNeighbors = 5;
+	unsigned uniformPOIDistance = 8;
 	
 	Ui::ProjectTab* ui;
 	QPainter painter;
