@@ -32,7 +32,7 @@ void SolverConfigWindow::on_resetButton_clicked()
 	ui->subsetRadiusY->setValue(16);
 	ui->maxIter->setValue(16);
 	ui->maxDeformationNorm->setValue(0.001);
-	ui->strainRadius->setValue(16.0);
+	ui->strainRadius->setValue(20.0);
 	ui->minStrainNeighbors->setValue(4);
 	ui->uniformPOIDistance->setValue(8);
 }

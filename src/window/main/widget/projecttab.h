@@ -73,7 +73,7 @@ class ProjectTab : public QWidget
 	int maxIter = 16;
 	float maxDeformationNorm = 0.001f;
 	float strainRadius = 20.f;
-	int minStrainNeighbors = 5;
+	int minStrainNeighbors = 4;
 	unsigned uniformPOIDistance = 8;
 	
 	Ui::ProjectTab* ui;
