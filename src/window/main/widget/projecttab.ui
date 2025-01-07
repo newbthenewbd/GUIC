@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>754</width>
+    <width>793</width>
     <height>400</height>
    </rect>
   </property>
@@ -223,17 +223,17 @@
               </item>
               <item>
                <property name="text">
-                <string>Deformation X</string>
+                <string>Displacement X</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Deformation Y</string>
+                <string>Displacement Y</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Deformation total</string>
+                <string>Displacement total</string>
                </property>
               </item>
               <item>

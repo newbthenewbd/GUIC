@@ -480,7 +480,7 @@ void ProjectTab::displayImage()
 	
 	for(opencorr::POI2D& i : data->poi) //only for minima and maxima
 	{
-		if(displayType.unit == UNIT_TYPE_DEFORMATION)
+		if(displayType.unit == UNIT_TYPE_DISPLACEMENT)
 		{
 			float displacementX = displayType.subUnit != 1 ? i.deformation.u : 0.0f;
 			float displacementY = displayType.subUnit != 0 ? i.deformation.v : 0.0f;
@@ -524,7 +524,7 @@ void ProjectTab::displayImage()
 		else break;
 	}
 	
-	double factor = (displayType.unit == UNIT_TYPE_DEFORMATION && unitsAction == UNITS_MM_PERCENT) ? mmPerPxFactor : 1.0;
+	double factor = (displayType.unit == UNIT_TYPE_DISPLACEMENT && unitsAction == UNITS_MM_PERCENT) ? mmPerPxFactor : 1.0;
 	
 	if(minValue != FLT_MAX)
 	{
@@ -562,7 +562,7 @@ void ProjectTab::displayImage()
 	for(opencorr::POI2D& i : data->poi)
 	{
 		if(i.result.zncc <= 0) continue;
-		if(displayType.unit == UNIT_TYPE_DEFORMATION)
+		if(displayType.unit == UNIT_TYPE_DISPLACEMENT)
 		{
 			float displacementX = displayType.subUnit != 1 ? i.deformation.u : 0.0f;
 			float displacementY = displayType.subUnit != 0 ? i.deformation.v : 0.0f;

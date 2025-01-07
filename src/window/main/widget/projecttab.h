@@ -17,18 +17,18 @@ typedef enum {
 } UnitsActionID;
 
 typedef enum {
-	UNIT_TYPE_DEFORMATION, UNIT_TYPE_CAUCHY_STRAIN, UNIT_TYPE_GREEN_STRAIN, UNIT_TYPE_MAX
+	UNIT_TYPE_DISPLACEMENT, UNIT_TYPE_CAUCHY_STRAIN, UNIT_TYPE_GREEN_STRAIN, UNIT_TYPE_MAX
 } UnitTypeID;
 static QString unitsUnits[][UNIT_TYPE_MAX] = {
 	// UNITS_PX_PERCENT	
 	{
-		"px", // UNIT_TYPE_DEFORMATION
+		"px", // UNIT_TYPE_DISPLACEMENT
 		"%", // UNIT_TYPE_CAUCHY_STRAIN
 		"%" // UNIT_TYPE_GREEN_STRAIN
 	},
 	// UNITS_MM_PERCENT
 	{
-		"mm", // UNIT_TYPE_DEFORMATION
+		"mm", // UNIT_TYPE_DISPLACEMENT
 		"%", // UNIT_TYPE_CAUCHY_STRAIN
 		"%" // UNIT_TYPE_GREEN_STRAIN
 	}
@@ -95,9 +95,9 @@ class ProjectTab : public QWidget
 		(DisplayType) {UNIT_TYPE_MAX, 0}, // null
 		(DisplayType) {UNIT_TYPE_MAX, 1}, // Convergence (at origin)
 		(DisplayType) {UNIT_TYPE_MAX, 2}, // Convergence (deformed)
-		(DisplayType) {UNIT_TYPE_DEFORMATION, 0},
-		(DisplayType) {UNIT_TYPE_DEFORMATION, 1},
-		(DisplayType) {UNIT_TYPE_DEFORMATION, 2},
+		(DisplayType) {UNIT_TYPE_DISPLACEMENT, 0},
+		(DisplayType) {UNIT_TYPE_DISPLACEMENT, 1},
+		(DisplayType) {UNIT_TYPE_DISPLACEMENT, 2},
 		(DisplayType) {UNIT_TYPE_CAUCHY_STRAIN, 0},
 		(DisplayType) {UNIT_TYPE_CAUCHY_STRAIN, 1},
 		(DisplayType) {UNIT_TYPE_CAUCHY_STRAIN, 2},
