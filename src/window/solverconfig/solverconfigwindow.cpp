@@ -27,14 +27,14 @@ void SolverConfigWindow::on_okButton_clicked()
 
 void SolverConfigWindow::on_resetButton_clicked()
 {
-	// TODO DRY
-	ui->uniformPOIDistance->setValue(8);
-	ui->subsetRadiusX->setValue(16);
-	ui->subsetRadiusY->setValue(16);
+	// TODO DRY with projecttab.h
+	ui->subsetRadiusX->setValue(20);
+	ui->subsetRadiusY->setValue(20);
+	ui->maxIter->setValue(16);
 	ui->maxDeformationNorm->setValue(0.001);
-	ui->maxIter->setValue(10);
 	ui->strainRadius->setValue(20.0);
-	ui->minStrainNeighbors->setValue(5);
+	ui->minStrainNeighbors->setValue(4);
+	ui->uniformPOIDistance->setValue(16);
 }
 
 void SolverConfigWindow::on_uniformPOIDistance_valueChanged(int arg1)
