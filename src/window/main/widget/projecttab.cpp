@@ -322,19 +322,19 @@ void ProjectTab::solve()
 	ui->solveButton->setEnabled(false);
 	ui->unitsButton->setEnabled(false);
 	
-	fftccSolver = std::make_unique<opencorr::FFTCC2D>(subsetRadiusX, subsetRadiusY, omp_get_num_procs());
+	fftccSolver = std::make_unique<opencorr::FFTCC2D>(initSubsetRadiusX, initSubsetRadiusY, omp_get_num_procs());
 	
 	if(solverAction == SOLVER_FFTCC_NR1 || solverAction == SOLVER_NR1)
 	{
-		dicSolver = std::make_unique<opencorr::NR2D1>(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
+		dicSolver = std::make_unique<opencorr::NR2D1>(iterSubsetRadiusX, iterSubsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
 	}
 	else if(solverAction == SOLVER_FFTCC_ICGN1 || solverAction == SOLVER_ICGN1)
 	{
-		dicSolver = std::make_unique<opencorr::ICGN2D1>(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
+		dicSolver = std::make_unique<opencorr::ICGN2D1>(iterSubsetRadiusX, iterSubsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
 	}
 	else if(solverAction == SOLVER_FFTCC_ICGN2 || solverAction == SOLVER_ICGN2)
 	{
-		dicSolver = std::make_unique<opencorr::ICGN2D2>(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
+		dicSolver = std::make_unique<opencorr::ICGN2D2>(iterSubsetRadiusX, iterSubsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
 	}
 	
 	strainSolver = std::make_unique<opencorr::Strain>(strainRadius, minStrainNeighbors, omp_get_num_procs());

@@ -41,6 +41,26 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
+          <widget class="QLabel" name="label_8">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Initial guess subset radius X</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="initSubsetRadiusX">
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="label">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -49,12 +69,12 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Subset radius X</string>
+            <string>Iteration subset radius X</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="subsetRadiusX">
+          <widget class="QSpinBox" name="iterSubsetRadiusX">
            <property name="maximum">
             <number>1000</number>
            </property>
@@ -114,6 +134,26 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
+          <widget class="QLabel" name="label_9">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Initial guess subset radius Y</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="initSubsetRadiusY">
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="label_2">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -122,12 +162,12 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Subset radius Y</string>
+            <string>Iteration subset radius Y</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="subsetRadiusY">
+          <widget class="QSpinBox" name="iterSubsetRadiusY">
            <property name="maximum">
             <number>1000</number>
            </property>
@@ -199,6 +239,9 @@
        <property name="text">
         <string>Reset to default</string>
        </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
      <item>
@@ -218,6 +261,12 @@
       <widget class="QPushButton" name="okButton">
        <property name="text">
         <string>OK</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

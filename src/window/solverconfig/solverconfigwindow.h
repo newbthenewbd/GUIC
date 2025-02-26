@@ -23,9 +23,13 @@ class SolverConfigWindow : public QDialog
     
     void on_uniformPOIDistance_valueChanged(int arg1);
     
-    void on_subsetRadiusX_valueChanged(int arg1);
+    void on_initSubsetRadiusX_valueChanged(int arg1);
     
-    void on_subsetRadiusY_valueChanged(int arg1);
+    void on_initSubsetRadiusY_valueChanged(int arg1);
+    
+    void on_iterSubsetRadiusX_valueChanged(int arg1);
+    
+    void on_iterSubsetRadiusY_valueChanged(int arg1);
     
     void on_maxDeformationNorm_valueChanged(double arg1);
     

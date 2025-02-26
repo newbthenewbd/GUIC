@@ -7,8 +7,10 @@ ui(new Ui::SolverConfigWindow)
 {
     ui->setupUi(this);
     ui->uniformPOIDistance->setValue((int) parent->uniformPOIDistance);
-	ui->subsetRadiusX->setValue(parent->subsetRadiusX);
-	ui->subsetRadiusY->setValue(parent->subsetRadiusY);
+    ui->initSubsetRadiusX->setValue(parent->initSubsetRadiusX);
+	ui->initSubsetRadiusY->setValue(parent->initSubsetRadiusY);
+	ui->iterSubsetRadiusX->setValue(parent->iterSubsetRadiusX);
+	ui->iterSubsetRadiusY->setValue(parent->iterSubsetRadiusY);
 	ui->maxDeformationNorm->setValue((double) parent->maxDeformationNorm);
 	ui->maxIter->setValue(parent->maxIter);
 	ui->strainRadius->setValue((double) parent->strainRadius);
@@ -28,8 +30,10 @@ void SolverConfigWindow::on_okButton_clicked()
 void SolverConfigWindow::on_resetButton_clicked()
 {
 	// TODO DRY with projecttab.h
-	ui->subsetRadiusX->setValue(16);
-	ui->subsetRadiusY->setValue(16);
+	ui->initSubsetRadiusX->setValue(16);
+	ui->initSubsetRadiusY->setValue(16);
+	ui->iterSubsetRadiusX->setValue(16);
+	ui->iterSubsetRadiusY->setValue(16);
 	ui->maxIter->setValue(16);
 	ui->maxDeformationNorm->setValue(0.001);
 	ui->strainRadius->setValue(20.0);
@@ -42,14 +46,24 @@ void SolverConfigWindow::on_uniformPOIDistance_valueChanged(int arg1)
 	((ProjectTab*) parent())->uniformPOIDistance = (unsigned) arg1;
 }
 
-void SolverConfigWindow::on_subsetRadiusX_valueChanged(int arg1)
+void SolverConfigWindow::on_initSubsetRadiusX_valueChanged(int arg1)
 {
-	((ProjectTab*) parent())->subsetRadiusX = arg1;
+	((ProjectTab*) parent())->initSubsetRadiusX = arg1;
 }
 
-void SolverConfigWindow::on_subsetRadiusY_valueChanged(int arg1)
+void SolverConfigWindow::on_initSubsetRadiusY_valueChanged(int arg1)
 {
-	((ProjectTab*) parent())->subsetRadiusY = arg1;
+	((ProjectTab*) parent())->initSubsetRadiusY = arg1;
+}
+
+void SolverConfigWindow::on_iterSubsetRadiusX_valueChanged(int arg1)
+{
+	((ProjectTab*) parent())->iterSubsetRadiusX = arg1;
+}
+
+void SolverConfigWindow::on_iterSubsetRadiusY_valueChanged(int arg1)
+{
+	((ProjectTab*) parent())->iterSubsetRadiusY = arg1;
 }
 
 void SolverConfigWindow::on_maxDeformationNorm_valueChanged(double arg1)
