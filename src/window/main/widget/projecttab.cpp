@@ -64,6 +64,9 @@ ui(new Ui::ProjectTab)
 	solverActions[SOLVER_FFTCC_ICGN1] = new QAction("FFTCC + ICGN1", nullptr);
 	solverActions[SOLVER_FFTCC_ICGN2] = new QAction("FFTCC + ICGN2", nullptr);
 	solverActions[SOLVER_FFTCC_NR1] = new QAction("FFTCC + NR1", nullptr);
+	solverActions[SOLVER_ICGN1] = new QAction("ICGN1", nullptr);
+	solverActions[SOLVER_ICGN2] = new QAction("ICGN2", nullptr);
+	solverActions[SOLVER_NR1] = new QAction("NR1", nullptr);
 	solverActions[SOLVER_CONFIGURE] = new QAction("Configure solvers...", nullptr);
 	solverActionGroup = new QActionGroup(nullptr);
 	for(int i = 0; i < SOLVER_CONFIGURE; i++)
@@ -313,15 +316,15 @@ void ProjectTab::solve()
 	
 	fftccSolver = std::make_unique<opencorr::FFTCC2D>(subsetRadiusX, subsetRadiusY, omp_get_num_procs());
 	
-	if(solverAction == SOLVER_FFTCC_NR1)
+	if(solverAction == SOLVER_FFTCC_NR1 || solverAction == SOLVER_NR1)
 	{
 		dicSolver = std::make_unique<opencorr::NR2D1>(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
 	}
-	else if(solverAction == SOLVER_FFTCC_ICGN1)
+	else if(solverAction == SOLVER_FFTCC_ICGN1 || solverAction == SOLVER_ICGN1)
 	{
 		dicSolver = std::make_unique<opencorr::ICGN2D1>(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
 	}
-	else if(solverAction == SOLVER_FFTCC_ICGN2)
+	else if(solverAction == SOLVER_FFTCC_ICGN2 || solverAction == SOLVER_ICGN2)
 	{
 		dicSolver = std::make_unique<opencorr::ICGN2D2>(subsetRadiusX, subsetRadiusY, maxDeformationNorm, maxIter, omp_get_num_procs());
 	}
@@ -363,9 +366,12 @@ void ProjectTab::solve()
         
         data->poi = prevPOI; // copy
 
-        fftccSolver->setImages(*refImage, *(data->image.get()));
-        fftccSolver->prepare();
-        fftccSolver->compute(data->poi);
+		if(solverAction <= SOLVER_FFTCC_ICGN2) // above this is without FFTCC
+		{
+			fftccSolver->setImages(*refImage, *(data->image.get()));
+			fftccSolver->prepare();
+			fftccSolver->compute(data->poi);
+		}
 
         dicSolver->setImages(*refImage, *(data->image.get()));
         dicSolver->prepare();
