@@ -206,7 +206,15 @@ void ProjectTab::displaySelected(int displayId)
 	}
 	else
 	{
-		ui->colormap->setUnit(unitsUnits[unitsAction][displayType.unit]);
+		if((displayType.unit == UNIT_TYPE_CAUCHY_STRAIN || displayType.unit == UNIT_TYPE_GREEN_STRAIN) && displayType.subUnit == 2)
+		{
+			ui->colormap->setUnit("");
+		}
+		else
+		{
+			ui->colormap->setUnit(unitsUnits[unitsAction][displayType.unit]);
+		}
+		
 		customMin = false;
 		customMax = false;
 	}
@@ -497,7 +505,7 @@ void ProjectTab::displayImage()
 		}
 		else if(displayType.unit == UNIT_TYPE_CAUCHY_STRAIN)
 		{
-			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
+			float strain = (displayType.subUnit == 0 ? i.strain.exx * 100.0 : displayType.subUnit == 1 ? i.strain.eyy * 100.0 : i.strain.exy);
 			
 			if(strain < minValue) minValue = strain;
 			if(strain > maxValue) maxValue = strain;
@@ -522,7 +530,7 @@ void ProjectTab::displayImage()
 		if(displayType.unit == UNIT_TYPE_GREEN_STRAIN)
 		{
 			
-			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
+			float strain = (displayType.subUnit == 0 ? i.strain.exx * 100.0 : displayType.subUnit == 1 ? i.strain.eyy * 100.0 : i.strain.exy);
 			
 			if(strain < minValue) minValue = strain;
 			if(strain > maxValue) maxValue = strain;
@@ -595,7 +603,7 @@ void ProjectTab::displayImage()
 		{
             float displacementX = i.deformation.u;
             float displacementY = i.deformation.v;
-			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
+			float strain = (displayType.subUnit == 0 ? i.strain.exx * 100.0 : displayType.subUnit == 1 ? i.strain.eyy * 100.0 : i.strain.exy);
 			
 			QColor color;
 			
@@ -612,7 +620,7 @@ void ProjectTab::displayImage()
 				color = ui->colormap->getColor((strain - minValue) / (maxValue - minValue));
 			}
 			
-            drawPoint(scene, i.x + displacementX, i.y + displacementY, color, QLocale().toString(strain) + "%");
+            drawPoint(scene, i.x + displacementX, i.y + displacementY, color, QLocale().toString(strain) + ui->colormap->getUnit());
 		}
 		else if(displayType.unit == UNIT_TYPE_MAX)
 		{
@@ -660,7 +668,7 @@ void ProjectTab::displayImage()
 		{
 			float displacementX = i.deformation.u;
 			float displacementY = i.deformation.v;
-			float strain = (displayType.subUnit == 0 ? i.strain.exx : displayType.subUnit == 1 ? i.strain.eyy : i.strain.exy) * 100.0;
+			float strain = (displayType.subUnit == 0 ? i.strain.exx * 100.0 : displayType.subUnit == 1 ? i.strain.eyy * 100.0 : i.strain.exy);
 			
 			QColor color;
 			
@@ -677,7 +685,7 @@ void ProjectTab::displayImage()
 				color = ui->colormap->getColor((strain - minValue) / (maxValue - minValue));
 			}
 			
-			drawPoint(scene, i.x + displacementX, i.y + displacementY, color, QLocale().toString(strain) + "%");
+			drawPoint(scene, i.x + displacementX, i.y + displacementY, color, QLocale().toString(strain) + ui->colormap->getUnit());
 		} else break;
 	}
 }

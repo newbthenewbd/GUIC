@@ -102,7 +102,7 @@ void ColorMapWidget::paintEvent(QPaintEvent* event)
 	
 	for(int i = 0; i < 26; i++)
 	{
-		QString text = QString::number(minValue + i * (maxValue - minValue) / 25.0, 'f', decimals) + " " + unit; //TU BYŁO ŹLE! maxValue - minValue jeśli maxValue np. -0,10 minValue np. -0,15 to wychodzi mi 0,05!
+		QString text = QString::number(minValue + i * (maxValue - minValue) / 25.0, 'f', decimals) + " " + unit;
 		painter.drawText(56, ((25 - i) + 0.85) * h / 26.0, text);
 		if(painter.fontMetrics().boundingRect(text).width() + 56 + 2 > minWidth)
 		{
