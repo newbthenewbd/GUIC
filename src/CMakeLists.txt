@@ -29,10 +29,18 @@ if(GUIC_USE_SYSTEM_QT)
 	target_link_libraries(${TARGET_NAME} PRIVATE Qt5::Widgets)
 else()
 	add_dependencies(${TARGET_NAME} Qt5)
-	set_target_properties(${TARGET_NAME} PROPERTIES
-		AUTOMOC_EXECUTABLE ${QT_BUILD_DIR}/bin/moc
-		AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic
-	)
+	if(CMAKE_HOST_WIN32)
+		set_target_properties(${TARGET_NAME} PROPERTIES
+			AUTOMOC_EXECUTABLE ${QT_BUILD_DIR}/bin/moc.exe
+			AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic.exe
+		)
+	else()
+		set_target_properties(${TARGET_NAME} PROPERTIES
+			AUTOMOC_EXECUTABLE ${QT_BUILD_DIR}/bin/moc
+			AUTOUIC_EXECUTABLE ${QT_BUILD_DIR}/bin/uic
+		)
+	endif()
+	
 	if(WIN32)
 		target_link_libraries(${TARGET_NAME} PRIVATE ws2_32)
 	endif()
